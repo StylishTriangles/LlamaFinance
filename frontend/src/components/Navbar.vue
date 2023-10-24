@@ -14,7 +14,7 @@ function onDisconnect() {
 
 <template>
   <div
-    class="sticky top-0 z-30 flex h-16 w-full justify-center text-base-content opacity-90 backdrop-blur transition-all duration-100"
+    class="sticky mb-6 top-0 z-30 flex h-16 w-full justify-center text-base-content opacity-90 backdrop-blur transition-all duration-100"
   >
     <nav class="navbar w-full">
       <div class="flex flex-1 md:gap-1 lg:gap-2">
