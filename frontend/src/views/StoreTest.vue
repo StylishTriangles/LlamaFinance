@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { testStore } from "~/store";
+// import { accountStore } from "~/store";
 </script>
 
 <template>
@@ -7,11 +7,11 @@ import { testStore } from "~/store";
     <p class="text-xl font-medium uppercase tracking-wide">
       Counter:
     </p>
-    <p class="text-4xl font-bold uppercase">
-      {{ testStore.counter }}
+    <!-- <p class="text-4xl font-bold uppercase">
+      {{ accountStore.counter }}
     </p>
-    <button type="button" class="btn-primary btn" @click="testStore.increment()">
+    <button type="button" class="btn-primary btn" @click="accountStore.increment()">
       increment
-    </button>
+    </button> -->
   </div>
 </template>

@@ -69,22 +69,22 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico"],
       manifest: {
-        name: "BootVue",
-        short_name: "BootVue",
+        name: "LlamaFinance",
+        short_name: "LlamaFin",
         theme_color: "#ffffff",
         icons: [
           {
-            src: "/pwa-192x192.png",
+            src: "/pwa-192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/pwa-512x512.png",
+            src: "/pwa-512.png",
             sizes: "512x512",
             type: "image/png",
           },
           {
-            src: "/pwa-512x512.png",
+            src: "/pwa-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
