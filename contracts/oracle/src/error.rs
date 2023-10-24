@@ -9,6 +9,12 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
-    #[error("Name does not exist (name {name})")]
-    NameNotExists { name: String },
+    #[error("Symbol does not exist (symbol {symbol})")]
+    SymbolNotExists { symbol: String },
+
+    #[error("Error (de)serializing storage")]
+    StorageError,
 }
+
+/// ContractResult is Result<T, ContractError>
+pub type ContractResult<T> = Result<T, ContractError>;
