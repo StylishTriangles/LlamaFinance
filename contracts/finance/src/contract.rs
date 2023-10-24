@@ -1,14 +1,14 @@
 use cosmwasm_std::{
-    entry_point, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Addr, Uint128,
+    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Addr, Uint128,
 };
 use cw_storage_plus::Map;
 
 use crate::error::ContractError;
-use crate::msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, CONFIG};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::state::{UserState, USER};
 
 
-pub const AMOUNTS: Map<Addr, Uint128> = Map::new("amounts");
+
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
@@ -26,7 +26,35 @@ pub fn execute(
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
-    AMOUNTS.save(deps.storage, info.sender, &Uint128::new(13))?;
+    match msg {
+        ExecuteMsg::Deposit {} => {
+            deposit(deps, env, info)
+        },
+        ExecuteMsg::Withdraw { amount } => {
+            withdraw(deps, env, info, amount)
+        }
+    }
+}
+
+fn deposit(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+) -> Result<Response, ContractError> {   
+    if info.funds.len() != 1 {
+        return Err(ContractError::Unauthorized {  });
+    }
+    let coin = info.funds.first().unwrap();
+    let r = USER.load(&deps.storage, k);
+    Ok(Response::default())
+}
+
+fn withdraw(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    amount: u128,
+) -> Result<Response, ContractError> {   
     Ok(Response::default())
 }
 
