@@ -1,11 +1,5 @@
 {
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": false,
-    "source.fixAll.eslint": true, // this allows ESLint to auto fix on save
-    "source.organizeImports": false
-  },
-  // ESLint config: https://github.com/kirklin/eslint-config
+  "editor.formatOnSave": true,
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },

@@ -45,9 +45,9 @@ const changeTheme = (event: MouseEvent, theme: CustomTheme) => {
   try {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    if (document.startViewTransition === undefined) {
+    if (document.startViewTransition === undefined)
       throw new Error("document.startViewTransition is undefined, please update your browser to the latest version or use a modern browser.");
-    }
+
     const x = event.clientX;
     const y = event.clientY;
     const endRadius = Math.hypot(
