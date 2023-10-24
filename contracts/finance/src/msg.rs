@@ -1,4 +1,4 @@
-use cosmwasm_std::Coin;
+use cosmwasm_std::{Coin, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -11,8 +11,19 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     Deposit {},
     Withdraw {
-        amount: u128,
-    }
+        denom: String,
+        amount: Uint128,
+    },
+    DepositCollateral {},
+    WithdrawCollateral {
+        denom: String,
+        amount: Uint128,
+    },
+    Borrow {
+        denom: String,
+        amount: Uint128,
+    },
+    Repay {}
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

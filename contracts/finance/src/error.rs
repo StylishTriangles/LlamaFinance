@@ -23,4 +23,15 @@ pub enum ContractError {
 
     #[error("do not send funds with burn")]
     FundsSentWithBurn {},
+
+    #[error("tried to deposit invalid asset")]
+    InvalidAssetDeposit {},
+
+    #[error("insufficient funds")]
+    InsufficientFunds {},
+
+    #[error("user doesn't have this asset")]
+    UserDoesntHaveAsset {},
 }
+
+pub type ContractResult<T> = Result<T, ContractError>;
