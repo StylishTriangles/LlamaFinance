@@ -23,7 +23,15 @@ pub enum ExecuteMsg {
         denom: String,
         amount: Uint128,
     },
-    Repay {}
+    Repay {},
+    UpdateAsset {
+        denom: String,
+        decimals: u16,
+        target_utilization_rate_bps: u16,
+        k0: Uint128,
+        k1: Uint128,
+        k2: Uint128,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

@@ -20,6 +20,15 @@ pub struct UserData {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct AssetConfig {
+    pub target_utilization_rate_bps: u16,
+    pub decimals: u16,
+    pub k0: Uint128,
+    pub k1: Uint128,
+    pub k2: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetInfo {
     /// For FE
     pub apr: Uint128,
@@ -28,10 +37,13 @@ pub struct AssetInfo {
     pub total_l_asset: Uint128,
     pub total_collateral: Uint128,
     pub cumulative_interest: Uint128,
+    pub asset_config: AssetConfig,
 }
+
 
 
 pub const USER_ASSET_INFO: Map<(&Addr, &str), UserAssetInfo> = Map::new("user_asset");
 pub const USER_DATA: Map<&Addr, UserData> = Map::new("user_data");
 pub const ASSET_INFO: Map<&str, AssetInfo> = Map::new("asset_info");
 pub const ASSETS: Item<Vec<String>> = Item::new("assets");
+pub const ADMIN: Item<Addr> = Item::new("admin");
