@@ -5,8 +5,10 @@ import Navbar from "~/components/Navbar.vue";
 <template>
   <div class="antialiased">
     <div class="min-h-screen bg-gradient-to-bl from-primary to-base-100">
-      <Navbar />
-      <RouterView />
+      <div class="mx-auto max-w-7xl">
+        <Navbar />
+        <RouterView />
+      </div>
     </div>
   </div>
 </template>
