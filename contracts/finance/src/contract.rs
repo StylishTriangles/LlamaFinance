@@ -116,8 +116,12 @@ fn convert_l_asset_to_asset(
     amount_l_asset.checked_multiply_ratio(total_deposit, total_l_asset).unwrap()
 }
 
-fn get_rate(asset_info: &AssetInfo) -> u32 {
-    asset_info.asset_config.optimal_rate
+fn calculate_rate(asset_info: &AssetInfo) -> ContractResult<u32> {
+    let config = &asset_info.asset_config;
+    // let rate_delta = config.optimal_rate.checked_sub(config.min_rate).ok_or(ContractError::InvalidOptimalRate {  })?.into();
+    // let linear_rate = asset_info.
+
+    Ok(config.optimal_rate)
 }
 
 fn update(
@@ -130,20 +134,23 @@ fn update(
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
         let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
-        let rate = get_rate(&asset_info);
+        let rate = calculate_rate(&asset_info)?;
         let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
         let final_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
 
         let user_key = (user, denom.as_ref());
         if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
             let final_borrow_amount = user_asset_info.borrow_amount.checked_multiply_ratio(final_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
-            let total_borrow_without_user = asset_info.total_borrow.checked_sub(user_asset_info.borrow_amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
-            let final_total_borrow = total_borrow_without_user.saturating_add(total_borrow_without_user);
-            asset_info.total_borrow = final_total_borrow;
             user_asset_info.borrow_amount = final_borrow_amount;
             USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
         }
+        let final_total_borrow = asset_info.total_borrow.checked_multiply_ratio(final_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
+        let new_interest = final_total_borrow.saturating_sub(asset_info.total_borrow);
+        let final_total_deposit = asset_info.total_deposit.saturating_add(new_interest);
+
         asset_info.cumulative_interest = final_cumulative_rate;
+        asset_info.total_borrow = final_total_borrow;
+        asset_info.total_deposit = final_total_deposit;
         asset_info.last_update = now;
         ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
     }
@@ -239,7 +246,7 @@ fn withdraw(
     asset_info.total_deposit = asset_info.total_deposit.checked_sub(asset_amount).ok().ok_or(ContractError::InsufficientFunds {})?;
 
     // Don't allow to withdraw more than is available
-    if asset_info.total_deposit < asset_info.total_borrow {
+    if asset_info.total_l_asset < asset_info.total_borrow {
         return Err(ContractError::InsufficientFunds {});
     }
 
@@ -329,7 +336,7 @@ fn borrow(
 
     asset_info.total_borrow += amount;
 
-    if asset_info.total_deposit < asset_info.total_borrow {
+    if asset_info.total_l_asset < asset_info.total_borrow {
         return Err(ContractError::InsufficientFunds {});
     }
 

@@ -48,6 +48,8 @@ pub enum ContractError {
     #[error("invalid total borrow")]
     InvalidTotalBorrow {},
 
+    #[error("invalid optimal rate")]
+    InvalidOptimalRate {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
