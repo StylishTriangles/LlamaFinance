@@ -48,6 +48,9 @@ const tableData = [
 function onCollateralize(asset: string) {
   emitter.emit("open-collateral-modal", { name: asset, decimals: 6 });
 }
+function onReduce(asset: string) {
+  emitter.emit("open-reduce-col-modal", { name: asset, decimals: 6 });
+}
 </script>
 
 <template>
@@ -79,9 +82,14 @@ function onCollateralize(asset: string) {
       </div>
     </template>
     <template #action="row">
-      <button class="btn btn-primary float-right text-xs" :onclick="() => onCollateralize(row.asset)">
-        Collateralize
-      </button>
+      <div class="flex justify-end gap-x-2">
+        <button class="btn btn-primary text-xs" :onclick="() => onCollateralize(row.asset)">
+          Collateralize
+        </button>
+        <button class="btn btn-primary btn-outline text-xs" :onclick="() => onReduce(row.asset)">
+          Reduce
+        </button>
+      </div>
     </template>
   </BaseTable>
 </template>

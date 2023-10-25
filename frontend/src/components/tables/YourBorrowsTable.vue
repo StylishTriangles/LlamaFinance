@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// import { modalsID } from "~/config";
 import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
 import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
@@ -49,6 +48,9 @@ const tableData = [
 function onBorrow(asset: string) {
   emitter.emit("open-borrow-modal", { name: asset, decimals: 6 });
 }
+function onRepay(asset: string) {
+  emitter.emit("open-repay-modal", { name: asset, decimals: 6 });
+}
 </script>
 
 <template>
@@ -80,9 +82,14 @@ function onBorrow(asset: string) {
       </div>
     </template>
     <template #action="row">
-      <button class="btn btn-primary float-right text-xs" :onclick="() => onBorrow(row.asset)">
-        Borrow
-      </button>
+      <div class="flex justify-end gap-x-2">
+        <button class="btn btn-primary text-xs" :onclick="() => onBorrow(row.asset)">
+          Borrow
+        </button>
+        <button class="btn btn-primary btn-outline text-xs" :onclick="() => onRepay(row.asset)">
+          Repay
+        </button>
+      </div>
     </template>
   </BaseTable>
 </template>

@@ -10,5 +10,7 @@ export interface EmitterEvents extends Record<EventType, any> {
   "open-deposit-modal": any;
   "open-withdraw-modal": any;
   "open-borrow-modal": any;
+  "open-repay-modal": any;
   "open-collateral-modal": any;
+  "open-reduce-col-modal": any;
 }

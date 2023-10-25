@@ -10,7 +10,7 @@ defineProps({
   },
   btnText: {
     type: String,
-    defaul: "Submit",
+    default: "Submit",
   },
 });
 

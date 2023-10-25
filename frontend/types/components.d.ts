@@ -20,6 +20,8 @@ declare module 'vue' {
     ModalsController: typeof import('./../src/components/modals/ModalsController.vue')['default']
     Navbar: typeof import('./../src/components/Navbar.vue')['default']
     NumberInput: typeof import('./../src/components/NumberInput.vue')['default']
+    ReduceCollateralModal: typeof import('./../src/components/modals/ReduceCollateralModal.vue')['default']
+    RepayModal: typeof import('./../src/components/modals/RepayModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThemeChange: typeof import('./../src/components/ThemeChange/index.vue')['default']
