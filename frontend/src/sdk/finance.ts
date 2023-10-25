@@ -296,4 +296,21 @@ export class Finance {
   getLiquidationMargin(ltv: number) {
     return 1 - ltv / MAX_LTV;
   }
+
+  getMaxLoanAmount(data: Map<string, UserAssetInfoResponse>, denom: string) {
+    const ai = data.get(denom);
+    if (!ai)
+      return 0;
+    let totalCollateralUSD = 0;
+    let totalBorrowUSD = 0;
+    for (const uai of data.values()) {
+      totalCollateralUSD += uai.collateralUSD;
+      totalBorrowUSD += uai.borrowAmountUSD;
+    }
+    
+    const ltv = totalBorrowUSD / totalCollateralUSD;
+    const liquidationMargin = this.getLiquidationMargin(ltv);
+    const maxLoanAmountUSD = totalCollateralUSD * liquidationMargin;
+    return maxLoanAmountUSD / ai.price_per_unit / ai.precision;
+  }
 }
