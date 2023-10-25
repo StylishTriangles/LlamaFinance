@@ -250,7 +250,7 @@ fn withdraw(
 
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-    let user_addr = info.sender;
+    let user_addr = info.sender.clone();
     let asset_amount = convert_l_asset_to_asset(amount, &asset_info)?;
 
     USER_ASSET_INFO.update(
@@ -279,9 +279,16 @@ fn withdraw(
 
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
-    // TODO: update asset APR
-
-    Ok(Response::default())
+    let response = Response::new().add_message(BankMsg::Send {
+        to_address: info.sender.clone().into(),
+        amount: vec![
+            Coin {
+                amount: asset_amount,
+                denom,
+            }
+        ]
+    });
+    Ok(response)
 }
 
 fn withdraw_collateral(
