@@ -42,6 +42,8 @@ pub struct AssetInfo {
     pub cumulative_interest: Uint128,
     pub asset_config: AssetConfig,
     pub last_update: Timestamp,
+    pub price: Uint128,
+    pub price_precision: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
