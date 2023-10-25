@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { modalsID } from "~/config";
 import type { TableColumn } from "~/types";
 import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
@@ -67,9 +68,21 @@ const tableData = [
     apy: formatPctValue(20.96),
   },
 ];
+
+const assetToDeposit = ref({ name: "", decimals: 0 } as any);
+
+function onDeposit(asset: string) {
+  assetToDeposit.value = { name: asset, decimals: 6 };
+  const dialog = document.getElementById(modalsID.DEPOSIT);
+  if (dialog)
+    (dialog as any).showModal();
+  else
+    console.error("Modal could not be opened");
+}
 </script>
 
 <template>
+  <DepositModal v-if="assetToDeposit" :asset="assetToDeposit" />
   <div class="card bg-neutral text-neutral-content rounded-xl mt-12 lg:mt-32 shadow-2xl">
     <div class="card-body">
       <div class="flex justify-between mb-10">
@@ -103,35 +116,12 @@ const tableData = [
             </p>
           </div>
         </template>
-        <template #action>
-          <button class="btn btn-primary" onclick="my_modal_1.showModal()">
+        <template #action="row">
+          <button class="btn btn-primary text-xs" :onclick="() => onDeposit(row.asset)">
             Deposit
           </button>
         </template>
       </BaseTable>
     </div>
   </div>
-
-  <dialog id="my_modal_1" class="modal shadow-xl backdrop-blur">
-    <div class="modal-box bg-secondary text-secondary-content">
-      <h3 class="font-bold text-lg">
-        Deposit here
-      </h3>
-      <p class="py-4">
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quibusdam ullam maxime distinctio, deserunt molestias provident aperiam vel magni ex labore laboriosam porro sed a? Numquam, ipsam? Consequuntur mollitia labore veniam.
-      </p>
-      <form method="dialog">
-        <div class="w-full flex justify-end">
-          <button class="p-2 btn btn-accent">
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-    <form method="dialog" class="modal-backdrop opacity-100">
-      <button class="outline-none" :style="{ background: 'transparent' }">
-        close
-      </button>
-    </form>
-  </dialog>
 </template>

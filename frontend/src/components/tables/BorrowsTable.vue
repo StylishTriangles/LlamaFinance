@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { modalsID } from "~/config";
 import type { TableColumn } from "~/types";
 import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
@@ -53,9 +54,21 @@ const tableData = [
     apy: formatPctValue(20.96),
   },
 ];
+
+const assetToBorrow = ref({ name: "", decimals: 0 } as any);
+
+function onBorrow(asset: string) {
+  assetToBorrow.value = { name: asset, decimals: 6 };
+  const dialog = document.getElementById(modalsID.BORROW);
+  if (dialog)
+    (dialog as any).showModal();
+  else
+    console.error("Modal could not be opened");
+}
 </script>
 
 <template>
+  <BorrowModal :asset="assetToBorrow" />
   <div class="card bg-neutral w-full text-neutral-content rounded-xl mt-12 lg:mt-26 shadow-2xl">
     <div class="card-body">
       <div class="flex justify-between mb-10">
@@ -81,8 +94,8 @@ const tableData = [
             </p>
           </div>
         </template>
-        <template #action>
-          <button class="btn btn-primary">
+        <template #action="row">
+          <button class="btn btn-primary text-xs" :onclick="() => onBorrow(row.asset)">
             Borrow
           </button>
         </template>

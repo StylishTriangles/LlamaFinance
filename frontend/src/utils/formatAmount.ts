@@ -48,10 +48,15 @@ export function formatAssetAmount(
   }
 }
 
+/**
+ * Formats value to:
+ * - 2 decimal places if value >= 1,
+ * - 4 significant digits otherwise (no more than 8 decimal places)
+ */
 export function formatUSDAmount(value: string | number | null) {
   value = Number(value) || 0;
 
-  if (value > 10)
+  if (value >= 1)
     return "$" + value.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,

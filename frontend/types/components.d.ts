@@ -8,14 +8,19 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AssetsTable: typeof import('./../src/components/tables/AssetsTable.vue')['default']
+    BaseModal: typeof import('./../src/components/modals/BaseModal.vue')['default']
     BaseTable: typeof import('./../src/components/tables/BaseTable.vue')['default']
+    BorrowModal: typeof import('./../src/components/modals/BorrowModal.vue')['default']
     BorrowsTable: typeof import('./../src/components/tables/BorrowsTable.vue')['default']
+    CollateralModal: typeof import('./../src/components/modals/CollateralModal.vue')['default']
     CollateralTable: typeof import('./../src/components/tables/CollateralTable.vue')['default']
-    copy: typeof import('./../src/components/tables/LendingTable copy.vue')['default']
+    DepositModal: typeof import('./../src/components/modals/DepositModal.vue')['default']
     LendingTable: typeof import('./../src/components/tables/LendingTable.vue')['default']
     Navbar: typeof import('./../src/components/Navbar.vue')['default']
+    NumberInput: typeof import('./../src/components/NumberInput.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThemeChange: typeof import('./../src/components/ThemeChange/index.vue')['default']
+    WalletButton: typeof import('./../src/components/WalletButton.vue')['default']
   }
 }

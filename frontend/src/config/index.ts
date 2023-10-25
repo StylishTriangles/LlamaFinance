@@ -11,3 +11,9 @@ export const appConfig = {
   NEXT_PUBLIC_SITE_ICON_URL: "/coreum.svg",
   NEXT_PUBLIC_GAS_PRICE: "0.0625utoken",
 };
+
+export const modalsID = {
+  DEPOSIT: "deposit_modal",
+  BORROW: "borrow_modal",
+  COLLATERAL: "collateral_modal",
+};

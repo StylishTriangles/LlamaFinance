@@ -1,15 +1,4 @@
 <script setup lang="ts">
-import { LogoutIcon } from "@heroicons/vue/outline";
-import ThemeChange from "./ThemeChange/index.vue";
-import { abbreviate } from "~/utils";
-
-async function onConnect() {
-  await accountStore.connectWallet();
-}
-
-function onDisconnect() {
-  accountStore.disconnect();
-}
 </script>
 
 <template>
@@ -53,12 +42,12 @@ function onDisconnect() {
 
       <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1 text-base font-medium">
-          <li>
+          <li class="bg-secondary/10 rounded-md mx-1">
             <RouterLink to="/deposit">
               Deposit
             </RouterLink>
           </li>
-          <li>
+          <li class="bg-secondary/10 rounded-md mx-1">
             <RouterLink to="/loans">
               Loans
             </RouterLink>
@@ -67,15 +56,8 @@ function onDisconnect() {
       </div>
 
       <div class="flex navbar-end gap-4">
+        <WalletButton />
         <ThemeChange />
-        <button v-if="!accountStore.walletAddress" class="btn-accent btn" @click="onConnect">
-          <span v-if="accountStore.loading" class="loading loading-spinner" />
-          <span v-else>Connect wallet</span>
-        </button>
-        <button v-else class="btn-accent btn" @click="onDisconnect">
-          {{ abbreviate(accountStore.walletAddress) }}
-          <LogoutIcon class="stroke-current w-5" />
-        </button>
       </div>
     </nav>
   </div>
