@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { assetsData } from "~/config";
 import type { TableColumn } from "~/types";
-import { formatPctValue, formatUSDAmount } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -25,45 +26,25 @@ const columns = [
   },
 ] as TableColumn[];
 
-const tableData = [
-  {
-    asset: "CORE",
-    total_deposited: formatUSDAmount(8990211.88),
-    total_borrowed: formatUSDAmount(8990211.88),
-    deposit_apy: formatPctValue(20.96),
-    borrow_apy: formatPctValue(31.31),
-  },
-  {
-    asset: "BTC",
-    total_deposited: formatUSDAmount(123456789.7),
-    total_borrowed: formatUSDAmount(123456789.7),
-    deposit_apy: formatPctValue(0.96),
-    borrow_apy: formatPctValue(5.31),
-  },
-  {
-    asset: "ETH",
-    total_deposited: formatUSDAmount(643245.18),
-    total_borrowed: formatUSDAmount(643245.18),
-    deposit_apy: formatPctValue(1.8),
-    borrow_apy: formatPctValue(2.41),
-  },
-  {
-    asset: "USDC",
-    total_deposited: formatUSDAmount(573280.53),
-    total_borrowed: formatUSDAmount(573280.53),
-    deposit_apy: formatPctValue(10.26),
-    borrow_apy: formatPctValue(31.31),
-  },
-  {
-    asset: "ALGO",
-    total_deposited: formatUSDAmount(3262.3),
-    total_borrowed: formatUSDAmount(3262.3),
-    deposit_apy: formatPctValue(20.96),
-    borrow_apy: formatPctValue(31.31),
-  },
-];
+const tableData = ref([] as any[]);
+const tvl = ref(0);
 
-const tvl = ref(575843280.53);
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
+  console.log(rawData);
+  tableData.value = rawData.map(asset => ({
+    asset: asset.denom,
+    total_deposited: formatAssetAmount(asset.totalDeposit),
+    total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
+    total_borrowed: formatAssetAmount(asset.totalBorrow),
+    total_borrowed_usd: formatUSDAmount(asset.totalBorrowUSD),
+    deposit_apy: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+    borrow_apy: formatPctValue(asset.apr),
+  }));
+
+  tvl.value = rawData.reduce((a, b) =>
+    a + b.totalCollateralUSD + b.totalDepositUSD, 0);
+});
 </script>
 
 <template>
@@ -80,8 +61,24 @@ const tvl = ref(575843280.53);
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
-          <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-          <p>{{ row.asset }}</p>
+          <img :src="assetsData[row.asset].icon" class="w-4">
+          <p>{{ assetsData[row.asset].name }}</p>
+        </div>
+      </template>
+      <template #total_deposited="row">
+        <div>
+          <p>{{ row.total_deposited }}</p>
+          <p class="text-sm opacity-50">
+            {{ row.total_deposited_usd }}
+          </p>
+        </div>
+      </template>
+      <template #total_borrowed="row">
+        <div>
+          <p>{{ row.total_borrowed }}</p>
+          <p class="text-sm opacity-50">
+            {{ row.total_borrowed_usd }}
+          </p>
         </div>
       </template>
     </BaseTable>

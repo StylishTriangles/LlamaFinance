@@ -68,9 +68,6 @@ class AccountStore {
         new Oracle(this.signingClient, this.walletAddress, contractAddresses.ORACLE_ADDRESS),
       );
 
-      const test = await this.financeSDK.getAssetsInfo();
-      console.log(test);
-
       this.loading = false;
       localStorage.setItem("wasConnected", "true"); // In case of refreshing the page, the user will be automatically connected
     } catch (error: any) {

@@ -29,9 +29,14 @@ export const contractAddresses = {
   FINANCE_ADDRESS: "testcore10573ku9u589pzsvhvjdvz7wjucnjjf65r02x9aut0n7euqahcm2qgmx3a4",
 };
 
-export const assetsData = {
+interface AssetData {
+  name: string;
+  icon: string;
+}
+
+export const assetsData: Record<string, AssetData> = {
   "utestcore": {
-    name: "TESTCORE",
+    name: "CORE",
     icon: "https://assets.coingecko.com/coins/images/24169/large/2b7Phdmz_400x400.png",
   },
   "musdt-testcore12d9e2fhlyw9khswzzrq3sakkmvrsms55n6zqff": {

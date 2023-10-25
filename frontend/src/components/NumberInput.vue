@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { BasicAsset } from "~/types";
 import { formatAssetAmount, formatUSDAmount } from "~/utils";
 
 const props = defineProps({
@@ -8,7 +9,7 @@ const props = defineProps({
     default: null,
   },
   asset: {
-    type: Object,
+    type: Object as PropType<BasicAsset>,
     default: () => {},
   },
   usdValue: {
@@ -77,10 +78,10 @@ function onInput() {
         @input="onInput"
       >
       <p
-        class="pointer-events-none absolute right-2 text-lg flex sm:text-2xl"
+        class="pointer-events-none absolute right-2 text-lg flex items-center sm:text-2xl"
         :style="{ top: '50%', transform: 'translateY(-50%)' }"
       >
-        <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
+        <img :src="asset.icon" class="w-5 h-5 flex-shrink-0">
         <span class="text-base text-neutral-content ml-1">{{ asset.name }}</span>
       </p>
     </div>

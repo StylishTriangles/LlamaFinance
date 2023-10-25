@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
+import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
-    type: Object,
+    type: Object as PropType<BasicAsset>,
     required: true,
   },
 });
@@ -13,7 +14,7 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  maxBalance: 9999,
+  maxBalance: props.asset.balance,
   depositedBalance: 0,
 });
 
@@ -26,7 +27,7 @@ const interestAPY = computed(() =>
 
 function onInputChange(value: string) {
   state.assetAmount = value;
-  state.assetUsdValue = Number(value) * 0.7;
+  state.assetUsdValue = Number(value) * props.asset.price;
 
   state.error = validateInput(
     value,
@@ -36,13 +37,18 @@ function onInputChange(value: string) {
   );
 }
 
-function onSubmit() {
+async function onSubmit() {
   if (state.error)
     return;
 
-  console.log("Submit");
-  const dialog = document.getElementById(modalsID.DEPOSIT);
-  (dialog as any).close();
+  const res = await accountStore.financeSDK!.deposit(
+    props.asset.name,
+    Number(state.assetAmount) * props.asset.precision,
+  );
+  console.log(res);
+
+  // const dialog = document.getElementById(modalsID.DEPOSIT);
+  // (dialog as any).close();
 }
 </script>
 

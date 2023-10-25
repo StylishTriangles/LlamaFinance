@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { emitter } from "~/main";
-import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import type { BasicAsset, TableColumn } from "~/types";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
 
 const columns = [
   {
@@ -26,51 +26,30 @@ const columns = [
   },
 ] as TableColumn[];
 
-const tableData = [
-  {
-    asset: "CORE",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    total_deposited: formatAssetAmount(8990211.88),
-    total_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "BTC",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    total_deposited: formatAssetAmount(8990211.88),
-    total_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "ETH",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    total_deposited: formatAssetAmount(8990211.88),
-    total_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "USDC",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    total_deposited: formatAssetAmount(8990211.88),
-    total_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "ALGO",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    total_deposited: formatAssetAmount(8990211.88),
-    total_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-];
+const tableData = ref([] as any[]);
 
-function onDeposit(asset: string) {
-  emitter.emit("open-deposit-modal", { name: asset, decimals: 6 });
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
+  const data = [];
+  for (const asset of rawData) {
+    const userBalance = await accountStore.getUserBalance(asset.denom);
+    const price = asset.price_per_unit * asset.precision;
+
+    data.push({
+      asset: rawAssetToBasic(asset, userBalance, price),
+      balance: formatAssetAmount(userBalance / asset.precision),
+      balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
+      apy: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+      total_deposited: formatAssetAmount(asset.totalDeposit),
+      total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
+    });
+  }
+
+  tableData.value = data;
+});
+
+function onDeposit(asset: BasicAsset) {
+  emitter.emit("open-deposit-modal", asset);
 }
 </script>
 
@@ -82,8 +61,8 @@ function onDeposit(asset: string) {
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
-          <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-          <p>{{ row.asset }}</p>
+          <img :src="row.asset.icon" class="w-4">
+          <p>{{ row.asset.name }}</p>
         </div>
       </template>
       <template #balance="row">

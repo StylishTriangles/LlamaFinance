@@ -5,6 +5,16 @@ export interface TableColumn {
   accessor: string;
 }
 
+export interface BasicAsset {
+  name: string;
+  icon: string;
+  decimals: number;
+  balance: number;
+  balanceUSD: number;
+  price: number;
+  precision: number;
+}
+
 export interface EmitterEvents extends Record<EventType, any> {
   "txn-success": string;
   "open-deposit-modal": any;
