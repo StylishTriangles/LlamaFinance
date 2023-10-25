@@ -63,7 +63,7 @@ pub fn execute(
             update_user_asset_info(deps, env, user_addr)
         },
         ExecuteMsg::UpdateAsset { denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate } => {
-            update_asset(deps, env, info, denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate)
+            update_asset(deps, env, info, denom, target_utilization_rate_bps, decimals, min_rate, optimal_rate, max_rate)
         }
     }
 }
@@ -76,7 +76,7 @@ fn deposit_collateral(
     update(&mut deps, &env, &info.sender)?;
 
 
-    for coin in info.funds.iter() {
+    for coin in info.funds.iter() { 
         // Fetch global cumulative interest for this asset
         let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
 
@@ -562,14 +562,18 @@ fn liquidate(
 fn update_asset(
     mut deps: DepsMut,
     env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     denom: String,
-    target_utilization_rate_bps: u16,
+    target_utilization_rate_bps: u32,
     decimals: u16,
     min_rate: u32,
     optimal_rate: u32,
     max_rate: u32,
 ) -> ContractResult<Response> {
+    if ADMIN.load(deps.storage)? != info.sender {
+        return Err(ContractError::Unauthorized {  });
+    }
+
     let mut new_asset = false;
     ASSET_INFO.update(deps.storage, &denom, 
         |asset_info| -> ContractResult<AssetInfo> {

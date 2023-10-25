@@ -34,7 +34,7 @@ pub struct UserData {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetConfig {
-    pub target_utilization_rate_bps: u16,
+    pub target_utilization_rate_bps: u32,
     pub decimals: u16,
     pub min_rate: u32,
     pub optimal_rate: u32,

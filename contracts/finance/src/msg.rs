@@ -35,7 +35,7 @@ pub enum ExecuteMsg {
     UpdateAsset {
         denom: String,
         decimals: u16,
-        target_utilization_rate_bps: u16,
+        target_utilization_rate_bps: u32,
         min_rate: u32,
         optimal_rate: u32,
         max_rate: u32,
