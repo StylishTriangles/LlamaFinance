@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { modalsID } from "~/config";
+// import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -36,7 +37,7 @@ const tableData = [
     apy: formatPctValue(20.96),
   },
   {
-    asset: "ETH",
+    asset: "ETHH",
     balance: formatAssetAmount(8990211.88),
     balance_usd: formatUSDAmount(8990211.88),
     amount_borrowed: formatAssetAmount(8990211.88),
@@ -45,16 +46,12 @@ const tableData = [
   },
 ];
 
-const assetToBorrow = ref({ name: "", decimals: 0 } as any);
-
 function onBorrow(asset: string) {
-  assetToBorrow.value = { name: asset, decimals: 6 };
-  openModal(modalsID.BORROW);
+  emitter.emit("open-borrow-modal", { name: asset, decimals: 6 });
 }
 </script>
 
 <template>
-  <CollateralModal :asset="assetToBorrow" />
   <BaseTable
     :columns="columns"
     :data="tableData"

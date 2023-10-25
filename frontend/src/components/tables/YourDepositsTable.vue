@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -45,17 +45,14 @@ const tableData = [
   },
 ];
 
-const assetToWithdraw = ref({ name: "", decimals: 0 } as any);
 const totalDeposited = ref(843280.53); // TODO
 
 function onWithdraw(asset: string) {
-  assetToWithdraw.value = { name: asset, decimals: 6 };
-  openModal(modalsID.WITHDRAW);
+  emitter.emit("open-withdraw-modal", { name: asset, decimals: 6 });
 }
 </script>
 
 <template>
-  <WithdrawModal :asset="assetToWithdraw" />
   <Card title="Your Deposits">
     <template v-if="totalDeposited > 0" #top-right>
       <p class="font-bold">

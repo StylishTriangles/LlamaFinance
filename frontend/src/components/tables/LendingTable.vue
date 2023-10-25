@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -69,16 +69,12 @@ const tableData = [
   },
 ];
 
-const assetToDeposit = ref({ name: "", decimals: 0 } as any);
-
 function onDeposit(asset: string) {
-  assetToDeposit.value = { name: asset, decimals: 6 };
-  openModal(modalsID.DEPOSIT);
+  emitter.emit("open-deposit-modal", { name: asset, decimals: 6 });
 }
 </script>
 
 <template>
-  <DepositModal :asset="assetToDeposit" />
   <Card title="Lending">
     <BaseTable
       :columns="columns"

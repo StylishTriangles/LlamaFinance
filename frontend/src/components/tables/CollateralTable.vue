@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -55,16 +55,12 @@ const tableData = [
   },
 ];
 
-const assetToCollateralize = ref({ name: "", decimals: 0 } as any);
-
 function onCollateralize(asset: string) {
-  assetToCollateralize.value = { name: asset, decimals: 6 };
-  openModal(modalsID.COLLATERAL);
+  emitter.emit("open-collateral-modal", { name: asset, decimals: 6 });
 }
 </script>
 
 <template>
-  <CollateralModal :asset="assetToCollateralize" />
   <Card title="Available to Collateralize">
     <BaseTable
       :columns="columns"
