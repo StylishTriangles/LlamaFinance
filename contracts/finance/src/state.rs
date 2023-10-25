@@ -16,7 +16,6 @@ pub struct UserAssetInfo {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UserData {
-    pub last_update_time: u64,
     pub ltv: Uint128,
     pub assets_value: Uint128,
 }
@@ -44,10 +43,15 @@ pub struct AssetInfo {
     pub asset_config: AssetConfig,
 }
 
-
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct GlobalData {
+    pub last_update: u64,
+    pub oracle: Addr,
+}
 
 pub const USER_ASSET_INFO: Map<(&Addr, &str), UserAssetInfo> = Map::new("user_asset");
 pub const USER_DATA: Map<&Addr, UserData> = Map::new("user_data");
 pub const ASSET_INFO: Map<&str, AssetInfo> = Map::new("asset_info");
 pub const ASSETS: Item<Vec<String>> = Item::new("assets");
 pub const ADMIN: Item<Addr> = Item::new("admin");
+pub const GLOBAL_DATA: Item<GlobalData> = Item::new("global_data");

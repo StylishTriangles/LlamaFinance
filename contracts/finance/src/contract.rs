@@ -1,22 +1,27 @@
 use cosmwasm_std::{
-    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, BankMsg, Coin,
+    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, BankMsg, Coin, Addr,
 };
 
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
-use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo};
+use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, USER_DATA, UserData, GLOBAL_DATA, GlobalData};
 use crate::query::query_handler;
 
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
-    _msg: InstantiateMsg,
+    msg: InstantiateMsg,
 ) -> ContractResult<Response> {
     ADMIN.save(deps.storage, &info.sender)?;
     ASSETS.save(deps.storage, &vec![])?;
+    let global_data = GlobalData {
+        last_update: env.block.time.nanos(),
+        oracle: deps.api.addr_validate(&msg.oracle)?,
+    };
+    GLOBAL_DATA.save(deps.storage, &global_data)?;
     Ok(Response::default())
 }
 
@@ -112,6 +117,20 @@ fn convert_l_asset_to_asset(
     amount_l_asset.checked_multiply_ratio(total_deposit, total_l_asset).unwrap()
 }
 
+fn update_user_data(
+    deps: DepsMut,
+    env: Env,
+    user: Addr,
+) -> Result<(), ContractError> {
+    let now = env.block.time;
+    let mut global_data = GLOBAL_DATA.load(deps.storage)?;
+    let time_elapse = now.nanos().checked_sub(global_data.last_update).ok_or(ContractError::ClockSkew {  })?;
+    let assets = ASSETS.load(deps.storage)?;
+    for denom in assets.iter() {
+
+    }
+    Ok(())
+}
 
 fn deposit(
     deps: DepsMut,
