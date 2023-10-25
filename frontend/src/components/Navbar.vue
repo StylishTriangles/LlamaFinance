@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { appConfig } from '~/config';
+import { appConfig } from "~/config";
+import logo from "~/assets/logo.png";
 </script>
 
 <template>
@@ -34,7 +35,7 @@ import { appConfig } from '~/config';
           <div
             class="inline-flex text-lg text-primary items-center transition-all duration-200 md:text-3xl"
           >
-            <img alt="logo" src="pwa-192.png" class="w-10">
+            <img alt="logo" :src="logo" class="w-10">
             <span class="text-accent">L<span class="lowercase">lama</span></span>
             <span class="text-base-content">F<span class="lowercase">inance</span></span>
           </div>

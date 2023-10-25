@@ -5,8 +5,9 @@ import type { GeneratedType } from "@cosmjs/proto-signing";
 import { Registry } from "@cosmjs/proto-signing";
 import { coreumRegistryTypes } from "../coreum/tx";
 import { connectKeplr } from "~/services/keplr";
-import { appConfig } from "~/config";
+import { appConfig, contractAddresses } from "~/config";
 import { getFromLocalStorage } from "~/utils";
+import { Finance } from "~/sdk";
 
 const PUBLIC_RPC_ENDPOINT = appConfig.NEXT_PUBLIC_CHAIN_RPC_ENDPOINT || "";
 const PUBLIC_CHAIN_ID = appConfig.NEXT_PUBLIC_CHAIN_ID;
@@ -15,6 +16,7 @@ const GAS_PRICE = appConfig.NEXT_PUBLIC_GAS_PRICE || "";
 class AccountStore {
   walletAddress = null as string | null;
   signingClient = null as SigningCosmWasmClient | null;
+  financeSDK = null as Finance | null;
   loading = false;
   error = null as any;
 
@@ -57,7 +59,17 @@ class AccountStore {
 
       // get user address
       const [{ address }] = await offlineSigner.getAccounts();
-      this.walletAddress = address;
+      this.walletAddress = address as string;
+
+      this.financeSDK = new Finance(
+        this.signingClient,
+        this.walletAddress,
+        contractAddresses.FINANCE_ADDRESS,
+      );
+
+      const test = await this.financeSDK.getAssetsInfo();
+      console.log(test);
+
       this.loading = false;
       localStorage.setItem("wasConnected", "true"); // In case of refreshing the page, the user will be automatically connected
     } catch (error: any) {

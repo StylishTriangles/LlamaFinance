@@ -25,6 +25,21 @@ export const modalsID = {
 };
 
 export const contractAddresses = {
-  ORACLE_ADDRESS: "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
+  ORACLE_ADDRESS: "testcore1s8pm5qeu8das9jlvneuv9wushaars6qg3l3a85jhzsf23w6m4g7qad8w03",
   FINANCE_ADDRESS: "testcore15y3frp5m63d4qew4emuxefzga0u3hguu8tz4qvtmfakqd8neeulszzlvep",
+};
+
+export const assetsData = {
+  "utestcore": {
+    name: "TESTCORE",
+    icon: "https://assets.coingecko.com/coins/images/24169/large/2b7Phdmz_400x400.png",
+  },
+  "musdt-testcore12d9e2fhlyw9khswzzrq3sakkmvrsms55n6zqff": {
+    name: "USDT",
+    icon: "https://icons.iconarchive.com/icons/cjdowner/cryptocurrency-flat/512/Tether-USDT-icon.png",
+  },
+  "sats-testcore12d9e2fhlyw9khswzzrq3sakkmvrsms55n6zqff": {
+    name: "BTC",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
+  },
 };
