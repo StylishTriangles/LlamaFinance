@@ -27,11 +27,11 @@ const columns = [
 ] as TableColumn[];
 
 const tableData = ref([] as any[]);
+const isLoading = ref(true);
 const tvl = ref(0);
 
 onBeforeMount(async () => {
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
-  console.log(rawData);
   tableData.value = rawData.map(asset => ({
     asset: asset.denom,
     total_deposited: formatAssetAmount(asset.totalDeposit),
@@ -44,6 +44,7 @@ onBeforeMount(async () => {
 
   tvl.value = rawData.reduce((a, b) =>
     a + b.totalCollateralUSD + b.totalDepositUSD, 0);
+  isLoading.value = false;
 });
 </script>
 
@@ -58,6 +59,7 @@ onBeforeMount(async () => {
     <BaseTable
       :columns="columns"
       :data="tableData"
+      :is-loading="isLoading"
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">

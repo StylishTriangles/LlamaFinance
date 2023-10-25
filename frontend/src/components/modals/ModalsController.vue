@@ -1,14 +1,21 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
+import type { BasicAsset } from "~/types";
+
+interface BorrowData {
+  asset: BasicAsset;
+  available: number;
+}
 
 const initialModalsData = {
-  assetToDeposit: null as any,
-  assetToWithdraw: null as any,
-  assetToBorrow: null as any,
-  assetToRepay: null as any,
-  assetToCollateralize: null as any,
-  assetToReduceCollateral: null as any,
+  assetToDeposit: null as BasicAsset | null,
+  assetToWithdraw: null as BasicAsset | null,
+  assetToBorrow: null as BasicAsset | null,
+  availableToBorrow: null as number | null,
+  assetToRepay: null as BasicAsset | null,
+  assetToCollateralize: null as BasicAsset | null,
+  assetToReduceCollateral: null as BasicAsset | null,
   txnHash: null as string | null,
 };
 
@@ -24,32 +31,33 @@ onMounted(() => {
   emitter.on("txn-success", openTxnSuccessModal);
 });
 
-function openDepositModal(asset: any) {
+function openDepositModal(asset: BasicAsset) {
   closeModals();
   state.assetToDeposit = asset;
   openModal(modalsID.DEPOSIT);
 }
-function openWithdrawModal(asset: any) {
+function openWithdrawModal(asset: BasicAsset) {
   closeModals();
   state.assetToWithdraw = asset;
   openModal(modalsID.WITHDRAW);
 }
-function openBorrowModal(asset: any) {
+function openBorrowModal(data: BorrowData) {
   closeModals();
-  state.assetToBorrow = asset;
+  state.assetToBorrow = data.asset;
+  state.availableToBorrow = data.available;
   openModal(modalsID.BORROW);
 }
-function openRepayModal(asset: any) {
+function openRepayModal(asset: BasicAsset) {
   closeModals();
   state.assetToRepay = asset;
   openModal(modalsID.REPAY);
 }
-function openCollateralModal(asset: any) {
+function openCollateralModal(asset: BasicAsset) {
   closeModals();
   state.assetToCollateralize = asset;
   openModal(modalsID.COLLATERAL);
 }
-function openReduceCollateralModal(asset: any) {
+function openReduceCollateralModal(asset: BasicAsset) {
   closeModals();
   state.assetToReduceCollateral = asset;
   openModal(modalsID.REDUCE_COL);
@@ -76,32 +84,33 @@ function closeModals() {
   <div>
     <BorrowModal
       v-if="state.assetToBorrow"
-      :key="state.assetToBorrow"
+      :key="state.assetToBorrow.denom"
       :asset="state.assetToBorrow"
+      :available="state.availableToBorrow!"
     />
     <RepayModal
       v-if="state.assetToRepay"
-      :key="state.assetToRepay"
+      :key="state.assetToRepay.denom"
       :asset="state.assetToRepay"
     />
     <CollateralModal
       v-if="state.assetToCollateralize"
-      :key="state.assetToCollateralize"
+      :key="state.assetToCollateralize.denom"
       :asset="state.assetToCollateralize"
     />
     <ReduceCollateralModal
       v-if="state.assetToReduceCollateral"
-      :key="state.assetToReduceCollateral"
+      :key="state.assetToReduceCollateral.denom"
       :asset="state.assetToReduceCollateral"
     />
     <DepositModal
       v-if="state.assetToDeposit"
-      :key="state.assetToDeposit"
+      :key="state.assetToDeposit.denom"
       :asset="state.assetToDeposit"
     />
     <WithdrawModal
       v-if="state.assetToWithdraw"
-      :key="state.assetToWithdraw"
+      :key="state.assetToWithdraw.denom"
       :asset="state.assetToWithdraw"
     />
     <TxnSuccessModal

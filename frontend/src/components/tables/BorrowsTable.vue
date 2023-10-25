@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-// import { modalsID } from "~/config";
 import { emitter } from "~/main";
-import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import type { BasicAsset, TableColumn } from "~/types";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
 
 const columns = [
   {
@@ -14,8 +13,8 @@ const columns = [
     accessor: "available",
   },
   {
-    header: "APY",
-    accessor: "apy",
+    header: "APR",
+    accessor: "apr",
   },
   {
     header: "",
@@ -23,41 +22,31 @@ const columns = [
   },
 ] as TableColumn[];
 
-const tableData = [
-  {
-    asset: "CORE",
-    available: formatAssetAmount(8990211.88),
-    available_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "BTC",
-    available: formatAssetAmount(8990211.88),
-    available_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "ETH",
-    available: formatAssetAmount(8990211.88),
-    available_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "USDC",
-    available: formatAssetAmount(8990211.88),
-    available_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "ALGO",
-    available: formatAssetAmount(8990211.88),
-    available_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-];
+const tableData = ref([] as any[]);
+const isLoading = ref(true);
 
-function onBorrow(asset: string) {
-  emitter.emit("open-borrow-modal", { name: asset, decimals: 6 });
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
+  const data = [];
+  for (const asset of rawData) {
+    const userBalance = await accountStore.getUserBalance(asset.denom);
+    const price = asset.price_per_unit * asset.precision;
+    const available = Math.max(asset.totalDeposit - asset.totalBorrow, 0);
+
+    data.push({
+      asset: rawAssetToBasic(asset, userBalance, price),
+      available: formatAssetAmount(available),
+      available_usd: formatUSDAmount(available * price),
+      apr: formatPctValue(asset.apr),
+    });
+  }
+
+  tableData.value = data;
+  isLoading.value = false;
+});
+
+function onBorrow(asset: BasicAsset, available: number) {
+  emitter.emit("open-borrow-modal", { asset, available });
 }
 </script>
 
@@ -66,11 +55,12 @@ function onBorrow(asset: string) {
     <BaseTable
       :columns="columns"
       :data="tableData"
+      :is-loading="isLoading"
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
-          <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-          <p>{{ row.asset }}</p>
+          <img :src="row.asset.icon" class="w-4">
+          <p>{{ row.asset.name }}</p>
         </div>
       </template>
       <template #available="row">
@@ -82,7 +72,10 @@ function onBorrow(asset: string) {
         </div>
       </template>
       <template #action="row">
-        <button class="btn btn-primary float-right text-xs" :onclick="() => onBorrow(row.asset)">
+        <button
+          class="btn btn-primary float-right text-xs"
+          :onclick="() => onBorrow(row.asset, Number(row.available))"
+        >
           Borrow
         </button>
       </template>

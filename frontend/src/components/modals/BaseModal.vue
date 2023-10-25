@@ -12,6 +12,10 @@ defineProps({
     type: String,
     default: "Submit",
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["submit"]);
@@ -32,6 +36,7 @@ function onSubmit() {
 
       <div class="w-full mt-10 flex justify-center">
         <button class="w-1/2 p-2 btn btn-primary" @click="onSubmit">
+          <span v-if="isLoading" class="loading loading-spinner loading-md" />
           {{ btnText }}
         </button>
       </div>
