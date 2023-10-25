@@ -17,7 +17,7 @@ pub fn instantiate(
     for key in msg.keys {
         PRICES.save(deps.storage, &key, &Uint128::zero())?;
     }
-    ADMIN.save(deps.storage, &_info.sender)?;
+    ADMIN.save(deps.storage, &deps.api.addr_validate(&msg.admin)?)?;
     Ok(Response::default())
 }
 
