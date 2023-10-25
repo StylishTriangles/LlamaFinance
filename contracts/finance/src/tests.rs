@@ -119,6 +119,16 @@ fn first() -> Result<(), String> {
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("liquidate: {}", e))?;
         t
     };
+    let t = {
+        let msg = ExecuteMsg::Repay {};
+        let mut env = mock_env();
+        env.block.time = t;
+        let info = mock_info(&alice, &[
+            Coin { denom: usdc.clone(), amount: Uint128::new(36_500)}
+        ]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("repay: {}", e))?;
+        t
+    };
     {
         let msg = ExecuteMsg::UpdateUserAssetInfo { user_addr: alice.clone() };
         let mut env = mock_env();
@@ -131,6 +141,8 @@ fn first() -> Result<(), String> {
     println!("{}", asset_info.total_borrow);
     println!("{}", asset_info.total_deposit);
     println!("{}", asset_info.total_l_asset);
+    let btc_asset_info = ASSET_INFO.load(deps.as_mut().storage, &btc).map_err(|e|format!("asset info: {}", e))?;
+    println!("{}", btc_asset_info.total_collateral);
     // let t0 = (mock_env().block.time.nanos() + SECONDS_IN_YEAR);
 
     Ok(())
