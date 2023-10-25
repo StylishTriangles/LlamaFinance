@@ -151,9 +151,9 @@ fn update(
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
         let rate = if asset_info.total_deposit.is_zero() {
-            calculate_rate(&asset_info)?
-        } else {
             0
+        } else {
+            calculate_rate(&asset_info)?
         };
         let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
         let new_interest_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;

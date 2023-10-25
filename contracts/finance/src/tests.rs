@@ -39,7 +39,7 @@ fn first() -> Result<(), String> {
             max_rate: btc_max_rate, 
         }; 
         let env = mock_env();
-        let info = mock_info(&oracle, &[]);
+        let info = mock_info(&creator, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("add asset btc: {}", e))?;
     }
 
