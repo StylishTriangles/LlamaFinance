@@ -11,6 +11,8 @@ fn first() -> Result<(), String> {
     let oracle: String = Addr::unchecked("oracle").into();
     let creator: String = Addr::unchecked("creator").into();
     let alice: String = Addr::unchecked("alice").into();
+    let bob: String = Addr::unchecked("bob").into();
+    let chase: String = Addr::unchecked("chase").into();
     let btc: String = Addr::unchecked("btc").into();
     let usdc: String = Addr::unchecked("usdc").into();
     // let alice_balances = [
@@ -88,12 +90,12 @@ fn first() -> Result<(), String> {
     {
         let msg = ExecuteMsg::Deposit {};
         let env = mock_env();
-        let info = mock_info(&alice, &[
+        let info = mock_info(&bob, &[
             Coin { denom: usdc.clone(), amount: Uint128::new(100_000)}
         ]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit: {}", e))?;
     }
-    let t1 = {
+    let t = {
         let msg = ExecuteMsg::Borrow { 
             denom: usdc.clone(), 
             amount: Uint128::new(30_000), 
@@ -104,16 +106,31 @@ fn first() -> Result<(), String> {
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("borrow: {}", e))?;
         t
     };
+    let t = {
+        let msg = ExecuteMsg::Liquidate { 
+            denom: btc.clone(), 
+            user_addr: alice.clone(),
+        };
+        let mut env = mock_env();
+        env.block.time = t;
+        let info = mock_info(&alice, &[
+            Coin { denom: usdc.clone(), amount: Uint128::new(1_000)}
+        ]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("liquidate: {}", e))?;
+        t
+    };
     {
         let msg = ExecuteMsg::UpdateUserAssetInfo { user_addr: alice.clone() };
         let mut env = mock_env();
-        env.block.time = t1;
+        env.block.time = t;
         let info = mock_info(&alice, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("update asset info: {}", e))?;
     }
     let asset_info = ASSET_INFO.load(deps.as_mut().storage, &usdc).map_err(|e|format!("asset info: {}", e))?;
     println!("{}", asset_info.apr);
     println!("{}", asset_info.total_borrow);
+    println!("{}", asset_info.total_deposit);
+    println!("{}", asset_info.total_l_asset);
     // let t0 = (mock_env().block.time.nanos() + SECONDS_IN_YEAR);
 
     Ok(())

@@ -531,12 +531,13 @@ fn liquidate(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    denom: String,
     user_addr: String,
+    denom: String,
 ) -> ContractResult<Response> {
     if info.funds.len() != 1 {
         return Err(ContractError::MultiLiquidateNotSupprted{});
     }
+    let debt_coin = info.funds[0].clone();
     update(&mut deps, &env, &info.sender)?;
     let global_data = GLOBAL_DATA.load(deps.storage)?;
     update_prices(&mut deps, &global_data)?;
@@ -549,18 +550,42 @@ fn liquidate(
     let extra_repay_value = repay_value.saturating_sub(max_payment);
     let final_repay_value = repay_value.checked_sub(extra_repay_value).ok().ok_or(ContractError::InvalidExtraRepayValue {  })?;
 
-    let repay_asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-    let final_repay_amount = final_repay_value.checked_multiply_ratio(repay_asset_info.price_precision, repay_asset_info.price).ok().ok_or(ContractError::InvalidPrice{})?;
+    let mut withdraw_asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+    let mut debt_asset_info = ASSET_INFO.load(deps.storage, &debt_coin.denom)?;
+    let final_withdraw_amount = final_repay_value.checked_multiply_ratio(withdraw_asset_info.price_precision, withdraw_asset_info.price).ok().ok_or(ContractError::InvalidPrice{})?;
+    
 
     let response = Response::new().add_message(BankMsg::Send {
         to_address: info.sender.into(),
         amount: vec![
             Coin {
-                amount: final_repay_amount,
-                denom,
+                amount: final_withdraw_amount,
+                denom: denom.clone(),
             }
         ]
     });
+    let user_key = (&user, denom.as_str());
+    let mut user_asset_info = USER_ASSET_INFO.load(deps.storage, user_key)?;
+    let user_debt_key = (&user, debt_coin.denom.as_str());
+    let mut user_debt_asset_info = USER_ASSET_INFO.load(deps.storage, user_debt_key)?;
+
+    let final_user_collateral = user_asset_info.collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
+    let final_user_debt_borrow = user_debt_asset_info.borrow_amount.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;;
+    let final_total_collateral = withdraw_asset_info.total_collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
+    let final_debt_total_borrowed = debt_asset_info.total_borrow.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
+    
+    user_debt_asset_info.borrow_amount = final_user_debt_borrow;
+    USER_ASSET_INFO.save(deps.storage, user_key, &user_debt_asset_info)?;
+    
+    user_asset_info.collateral = final_user_collateral;
+    USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
+    
+    withdraw_asset_info.total_collateral = final_total_collateral;
+    ASSET_INFO.save(deps.storage, &denom, &withdraw_asset_info)?;
+    
+    debt_asset_info.total_borrow = final_debt_total_borrowed;
+    ASSET_INFO.save(deps.storage, &debt_coin.denom, &debt_asset_info)?;
+
     Ok(response)
 }
 
