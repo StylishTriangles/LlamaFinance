@@ -39,7 +39,7 @@ export class Oracle {
             this.contractAddress,
             {
                 addSymbol: {
-                    symbol
+                    symbol: symbol
                 }
             },
             "auto"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { appConfig } from '~/config';
 </script>
 
 <template>
@@ -50,6 +51,11 @@
           <li class="bg-secondary/10 rounded-md mx-1">
             <RouterLink to="/loans">
               Loans
+            </RouterLink>
+          </li>
+          <li v-if="accountStore.walletAddress === appConfig.ADMIN" class="bg-secondary/10 rounded-md mx-1">
+            <RouterLink to="/admin">
+              Admin
             </RouterLink>
           </li>
         </ul>
