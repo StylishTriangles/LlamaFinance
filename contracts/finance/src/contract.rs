@@ -132,7 +132,7 @@ fn calculate_rate(asset_info: &AssetInfo) -> ContractResult<u32> {
     let util_rate = asset_info.total_borrow.checked_multiply_ratio(RATE_DENOMINATOR, asset_info.total_deposit).ok().ok_or(ContractError::InvalidUtilizationRatio {  })?;
 
     if let Ok(util_delta) = util_rate.checked_sub(Uint128::from(config.target_utilization_rate_bps)) {
-        let max_util_delta = RATE_DENOMINATOR.checked_sub(config.target_utilization_rate_bps.into()).ok_or(ContractError::InvalidTargetUtilization {  })?;
+        let max_util_delta = RATE_DENOMINATOR.checked_sub(config.target_utilization_rate_bps).ok_or(ContractError::InvalidTargetUtilization {  })?;
         let rate_delta = config.max_rate.checked_sub(config.optimal_rate).ok_or(ContractError::InvalidMaxRate {  })?;
         let util_delta_rate = util_delta.checked_multiply_ratio(rate_delta, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidUtilizationRatio {  })?;
         let nonlinear_rate = util_delta_rate.checked_multiply_ratio(RATE_DENOMINATOR, max_util_delta).ok().ok_or(ContractError::InvalidTargetUtilization {  })?;
@@ -153,7 +153,7 @@ fn update(
     let now = env.block.time;
     let assets = ASSETS.load(deps.storage)?;
     for denom in assets.iter() {
-        let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        let mut asset_info = ASSET_INFO.load(deps.storage, denom)?;
         let rate = if asset_info.total_deposit.is_zero() {
             asset_info.asset_config.min_rate
         } else {
@@ -179,7 +179,7 @@ fn update(
         asset_info.total_deposit = final_total_deposit;
         asset_info.last_update = now;
         asset_info.apr = Uint128::from(rate);
-        ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
+        ASSET_INFO.save(deps.storage, denom, &asset_info)?;
     }
     Ok(())
 }
@@ -439,7 +439,7 @@ fn repay(
     }
 
     let mut response = Response::new();
-    if coins_to_return.len() > 0 {
+    if !coins_to_return.is_empty() {
         response = response.add_message(BankMsg::Send {
             to_address: info.sender.into(),
             amount: coins_to_return,
@@ -473,10 +473,10 @@ fn update_prices(
             symbol: _,
             precision,
         } = query_price(deps.as_ref(), global_data.oracle.clone(), denom.clone())?;
-        let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        let mut asset_info = ASSET_INFO.load(deps.storage, denom)?;
         asset_info.price = price;
         asset_info.price_precision = precision;
-        ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
+        ASSET_INFO.save(deps.storage, denom, &asset_info)?;
     }
     Ok(())
 }
@@ -564,6 +564,7 @@ fn liquidate(
     Ok(response)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn update_asset(
     mut deps: DepsMut,
     env: Env,
@@ -623,7 +624,7 @@ fn update_asset(
 
     if new_asset {
         let mut assets = ASSETS.load(deps.storage)?;
-        assets.push(denom.clone());
+        assets.push(denom);
         ASSETS.save(deps.storage, &assets)?;
     }
     update(&mut deps, &env, &env.contract.address)?;
