@@ -7,7 +7,7 @@ import { coreumRegistryTypes } from "../coreum/tx";
 import { connectKeplr } from "~/services/keplr";
 import { appConfig, contractAddresses } from "~/config";
 import { getFromLocalStorage } from "~/utils";
-import { Finance } from "~/sdk";
+import { Finance, Oracle } from "~/sdk";
 
 const PUBLIC_RPC_ENDPOINT = appConfig.NEXT_PUBLIC_CHAIN_RPC_ENDPOINT || "";
 const PUBLIC_CHAIN_ID = appConfig.NEXT_PUBLIC_CHAIN_ID;
@@ -65,6 +65,7 @@ class AccountStore {
         this.signingClient,
         this.walletAddress,
         contractAddresses.FINANCE_ADDRESS,
+        new Oracle(this.signingClient, this.walletAddress, contractAddresses.ORACLE_ADDRESS),
       );
 
       const test = await this.financeSDK.getAssetsInfo();

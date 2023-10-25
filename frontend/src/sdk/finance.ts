@@ -1,5 +1,8 @@
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { coin } from "@cosmjs/stargate";
+import { Oracle } from "./oracle";
+
+const APR_PRECISION = 1_000_000;
 
 interface UserAssetInfo {
     collateral: string,
@@ -45,23 +48,33 @@ export class UserAssetInfoResponse {
 export class AssetInfoResponse {
     denom: string
     apr: number
+    price_per_unit: number
+    precision: number // The precision of the assets decimals -> ex. USDC has 1000000
     totalDeposit: number
+    totalDepositUSD: number
     totalBorrow: number
+    totalBorrowUSD: number
     totalLAsset: number
     totalCollateral: number
+    totalCollateralUSD: number
     cumulativeInterest: number
     assetConfig: AssetConfig
     timestamp: number
 
-    constructor(ai: AssetInfo) {
+    constructor(ai: AssetInfo, price_per_unit: number) {
         let precision = 10**ai.assetConfig.decimals;
 
         this.denom = ai.denom;
-        this.apr = Number(ai.apr) / 2**64;
+        this.apr = Number(ai.apr) * 100 / APR_PRECISION;
+        this.price_per_unit = price_per_unit;
+        this.precision = precision;
         this.totalDeposit = Number(ai.totalDeposit) / precision;
+        this.totalDepositUSD = this.totalDeposit * price_per_unit * precision;
         this.totalBorrow = Number(ai.totalBorrow) / precision;
+        this.totalBorrowUSD = this.totalBorrow * price_per_unit * precision;
         this.totalLAsset = Number(ai.totalLAsset) / precision;
         this.totalCollateral = Number(ai.totalCollateral) / precision;
+        this.totalCollateralUSD = this.totalCollateral * price_per_unit * precision;
         this.cumulativeInterest = Number(ai.cumulativeInterest) / 2**64;
         this.assetConfig = ai.assetConfig;
         this.timestamp = ai.timestamp;
@@ -72,11 +85,13 @@ export class Finance {
     walletAddress: string;
     contractAddress: string;
     client: SigningCosmWasmClient
+    oracle: Oracle
 
-    constructor(client: SigningCosmWasmClient, walletAddress: string, contractAddress: string) {
+    constructor(client: SigningCosmWasmClient, walletAddress: string, contractAddress: string, oracle: Oracle) {
         this.walletAddress = walletAddress;
         this.contractAddress = contractAddress;
         this.client = client;
+        this.oracle = oracle;
     }
 
     async deposit(denom: string, amount: number | string) {
@@ -214,20 +229,23 @@ export class Finance {
 
     async getAssetInfo(denom: string) {
         let res: AssetInfo = await this.client.queryContractSmart(this.contractAddress, { assetInfo: { denom } });
-        return new AssetInfoResponse(res);
+        let price = await this.oracle.getPrice(denom);
+        return new AssetInfoResponse(res, price.price);
     }
 
     async getAssetsInfo(): Promise<Map<string, AssetInfoResponse>> {
+        let prices = await this.oracle.getPrices();
         let res: Array<AssetInfo> = await this.client.queryContractSmart(this.contractAddress, { assetsInfo: {} });
         let ret = new Map<string, AssetInfoResponse>();
         for (let ai of res) {
-            ret.set(ai.denom, new AssetInfoResponse(ai));
+            ret.set(ai.denom, new AssetInfoResponse(ai, prices[ai.denom].price));
         }
         return ret;
     }
 
     async getAssetsInfoArray(): Promise<Array<AssetInfoResponse>> {
+        let prices = await this.oracle.getPrices();
         let res: Array<AssetInfo> = await this.client.queryContractSmart(this.contractAddress, { assetsInfo: {} });
-        return res.map(ai => new AssetInfoResponse(ai));
+        return res.map(ai => new AssetInfoResponse(ai, prices[ai.denom].price));
     }
 }
