@@ -34,6 +34,7 @@ pub struct AssetConfig {
 #[serde(rename_all = "camelCase")]
 pub struct AssetInfo {
     /// For FE
+    pub denom: String,
     pub apr: Uint128,
     pub total_deposit: Uint128,
     pub total_borrow: Uint128,

@@ -365,7 +365,7 @@ fn borrow(
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
     let response = Response::new().add_message(BankMsg::Send {
-        to_address: info.sender.into(),
+        to_address: info.sender.clone().into(),
         amount: vec![
             Coin {
                 amount,
@@ -373,6 +373,14 @@ fn borrow(
             }
         ]
     });
+
+    let global_data = GLOBAL_DATA.load(deps.storage)?;
+    update_prices(&mut deps, &global_data)?;
+    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
+    if !liquidaton_value.is_zero() {
+        return Err(ContractError::UnsafeBorrow {  });
+    }
+
 
     Ok(response)
 }
@@ -464,14 +472,14 @@ fn update_prices(
 
 fn max_liquidation_value(
     deps: &mut DepsMut,
-    user: Addr,
+    user: &Addr,
     global_data: &GlobalData,
 ) -> ContractResult<Uint128> {
     let mut debt_coins = vec![];
     let mut collateral_coins = vec![];
     let assets = ASSETS.load(deps.storage)?;
     for asset in assets.iter() {
-        let user_key = (&user, asset.as_ref());
+        let user_key = (user, asset.as_ref());
         if let Ok(user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
             {
                 let amount = user_asset_info.borrow_amount;
@@ -525,7 +533,7 @@ fn liquidate(
     let user = deps.api.addr_validate(&user_addr)?;
 
     let repay_value = calculate_coins_value(&mut deps, info.funds)?;
-    let max_payment = max_liquidation_value(&mut deps, user, &global_data)?;
+    let max_payment = max_liquidation_value(&mut deps, &user, &global_data)?;
     
     let extra_repay_value = repay_value.saturating_sub(max_payment);
     let final_repay_value = repay_value.checked_sub(extra_repay_value).ok().ok_or(ContractError::InvalidExtraRepayValue {  })?;
@@ -574,6 +582,7 @@ fn update_asset(
                     new_asset = true;
                     Ok(
                         AssetInfo {
+                            denom: denom.clone(),
                             apr: Uint128::zero(),
                             total_deposit: Uint128::zero(),
                             total_borrow: Uint128::zero(),
