@@ -151,7 +151,7 @@ fn update(
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
         let rate = if asset_info.total_deposit.is_zero() {
-            0
+            asset_info.asset_config.min_rate
         } else {
             calculate_rate(&asset_info)?
         };
@@ -174,6 +174,7 @@ fn update(
         asset_info.total_borrow = final_total_borrow;
         asset_info.total_deposit = final_total_deposit;
         asset_info.last_update = now;
+        asset_info.apr = Uint128::from(rate);
         ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
     }
     Ok(())
