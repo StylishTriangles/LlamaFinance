@@ -47,6 +47,9 @@ const tableData = [
 
 const totalDeposited = ref(843280.53); // TODO
 
+function onDeposit(asset: string) {
+  emitter.emit("open-deposit-modal", { name: asset, decimals: 6 });
+}
 function onWithdraw(asset: string) {
   emitter.emit("open-withdraw-modal", { name: asset, decimals: 6 });
 }
@@ -89,9 +92,14 @@ function onWithdraw(asset: string) {
         </div>
       </template>
       <template #action="row">
-        <button class="btn btn-primary btn-outline float-right text-xs" :onclick="() => onWithdraw(row.asset)">
-          Withdraw
-        </button>
+        <div class="flex justify-end gap-x-2">
+          <button class="btn btn-primary text-xs" :onclick="() => onDeposit(row.asset)">
+            Deposit
+          </button>
+          <button class="btn btn-primary btn-outline text-xs" :onclick="() => onWithdraw(row.asset)">
+            Withdraw
+          </button>
+        </div>
       </template>
     </BaseTable>
   </Card>
