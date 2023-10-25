@@ -315,7 +315,7 @@ fn withdraw_collateral(
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
     let response = Response::new().add_message(BankMsg::Send {
-        to_address: info.sender.into(),
+        to_address: info.sender.clone().into(),
         amount: vec![
             Coin {
                 amount,
@@ -323,7 +323,22 @@ fn withdraw_collateral(
             }
         ]
     });
+    validate_ltv(deps, &info)?;
     Ok(response)
+}
+
+fn validate_ltv(
+    mut deps: DepsMut,
+    info: &MessageInfo,
+) -> ContractResult<()> {
+    let global_data = GLOBAL_DATA.load(deps.storage)?;
+    update_prices(&mut deps, &global_data)?;
+    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
+    if liquidaton_value.is_zero() {
+        Ok(())
+    } else {
+        Err(ContractError::UnsafeLTV {  })
+    }
 }
 
 fn borrow(
@@ -336,8 +351,6 @@ fn borrow(
     update(&mut deps, &env, &info.sender)?;
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-
-    // TODO: check collateralization ratio
 
     USER_ASSET_INFO.update(deps.storage, (&info.sender, &denom), |user_asset| -> ContractResult<UserAssetInfo> {
         match user_asset {
@@ -374,14 +387,7 @@ fn borrow(
         ]
     });
 
-    let global_data = GLOBAL_DATA.load(deps.storage)?;
-    update_prices(&mut deps, &global_data)?;
-    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
-    if !liquidaton_value.is_zero() {
-        return Err(ContractError::UnsafeBorrow {  });
-    }
-
-
+    validate_ltv(deps, &info)?;
     Ok(response)
 }
 

@@ -87,8 +87,8 @@ pub enum ContractError {
     #[error("invalid extra repay value")]
     InvalidExtraRepayValue {},
 
-    #[error("unsafe borrow")]
-    UnsafeBorrow {},
+    #[error("unsafe ltv")]
+    UnsafeLTV {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
