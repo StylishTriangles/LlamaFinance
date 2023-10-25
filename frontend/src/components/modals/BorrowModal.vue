@@ -1,16 +1,13 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
+import type { UserAssetInfoResponse } from "~/sdk";
 import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
     type: Object as PropType<BasicAsset>,
-    required: true,
-  },
-  available: {
-    type: Number,
     required: true,
   },
 });
@@ -20,21 +17,39 @@ const state = reactive({
   assetUsdValue: 0,
   error: "",
   isLoading: false,
-  maxBalance: props.available,
+  maxBalance: 0,
   borrowedSoFar: 0,
-  liqMargin: 20.1,
-  ltv: 2.1,
+  liqMargin: 0,
+  ltv: 0,
+});
+
+const rawUserData = ref(null as null | Map<string, UserAssetInfoResponse>);
+
+onBeforeMount(async () => {
+  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  state.borrowedSoFar = rawUserData.value.get(props.asset.denom)!.borrowAmountUSD;
+  state.maxBalance = Number((Number(accountStore.financeSDK!.getMaxLoanAmount(rawUserData.value, props.asset.denom).toFixed(props.asset.decimals)) - (1 * 10 ** (-1 * props.asset.decimals))).toFixed(props.asset.decimals));
+  state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
+  state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
 });
 
 const totalBorrow = computed(() =>
   state.borrowedSoFar + state.assetUsdValue,
 );
-const newLiqMargin = computed(() =>
-  -15.24, // TODO
-);
-const newLTV = computed(() =>
-  5.24, // TODO
-);
+const newLTV = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLTVafter(
+    rawUserData.value,
+    props.asset.denom,
+    Number(state.assetAmount) * -1,
+  ) * 100;
+});
+const newLiqMargin = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100;
+});
 
 function onInputChange(value: string) {
   state.assetAmount = value;

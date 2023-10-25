@@ -50,7 +50,6 @@ async function assignData() {
       asset: rawAssetToBasic(asset, userBalance, price),
       balance: formatAssetAmount(userBalance / asset.precision),
       balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
-      amout_added_raw: userCollateral,
       amount_added: formatAssetAmount(userCollateral),
       amount_added_usd: formatUSDAmount(userCollateral * price),
     });

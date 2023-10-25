@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { emitter } from "~/main";
-import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import type { BasicAsset, TableColumn } from "~/types";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
+
+const emit = defineEmits(["borrowCalced"]);
 
 const columns = [
   {
@@ -26,30 +28,50 @@ const columns = [
   },
 ] as TableColumn[];
 
-const tableData = [
-  {
-    asset: "CORE",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    amount_borrowed: formatAssetAmount(8990211.88),
-    amount_borrowed_usd: formatUSDAmount(8990211.88),
-    apr: formatPctValue(20.96),
-  },
-  {
-    asset: "ETHH",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    amount_borrowed: formatAssetAmount(8990211.88),
-    amount_borrowed_usd: formatUSDAmount(8990211.88),
-    apr: formatPctValue(20.96),
-  },
-];
+const tableData = ref([] as any[]);
+const totalBorrow = ref(0);
+const isLoading = ref(true);
 
-function onBorrow(asset: string) {
-  emitter.emit("open-borrow-modal", { name: asset, decimals: 6 });
+onBeforeMount(() => {
+  assignData();
+  emitter.on("txn-success", assignData);
+});
+
+async function assignData() {
+  isLoading.value = true;
+  const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
+  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  const data = [];
+  let total = 0;
+  for (const asset of rawData) {
+    const userBalance = await accountStore.getUserBalance(asset.denom);
+    const price = asset.price_per_unit * asset.precision;
+    const userBorrow = rawUserData.get(asset.denom)!.borrowAmount;
+    if (userBorrow === 0)
+      continue;
+
+    data.push({
+      asset: rawAssetToBasic(asset, userBalance, price),
+      balance: formatAssetAmount(userBalance / asset.precision),
+      balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
+      amount_borrowed: formatAssetAmount(userBorrow),
+      amount_borrowed_usd: formatUSDAmount(userBorrow * price),
+      apr: formatPctValue(asset.apr),
+    });
+    total += userBorrow * price;
+  }
+  tableData.value = data;
+  totalBorrow.value = total;
+  emit("borrowCalced", total);
+
+  isLoading.value = false;
 }
-function onRepay(asset: string) {
-  emitter.emit("open-repay-modal", { name: asset, decimals: 6 });
+
+function onBorrow(asset: BasicAsset) {
+  emitter.emit("open-borrow-modal", asset);
+}
+function onRepay(asset: BasicAsset) {
+  emitter.emit("open-repay-modal", asset);
 }
 </script>
 
@@ -57,12 +79,13 @@ function onRepay(asset: string) {
   <BaseTable
     :columns="columns"
     :data="tableData"
+    :is-loading="isLoading"
     no-data-message="No borrows yet"
   >
     <template #asset="row">
       <div class="flex gap-x-2 items-center">
-        <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-        <p>{{ row.asset }}</p>
+        <img :src="row.asset.icon" class="w-4">
+        <p>{{ row.asset.name }}</p>
       </div>
     </template>
     <template #balance="row">

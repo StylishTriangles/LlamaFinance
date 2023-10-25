@@ -2,11 +2,14 @@
 import { formatUSDAmount } from "~/utils";
 
 const totalCollateralized = ref(0);
-const totalBorrowed = ref(1234.53); // TODO
+const totalBorrowed = ref(0);
 const visibleYourTable = ref("COLLATERAL");
 
 function updateCollateral(col: number) {
   totalCollateralized.value = col;
+}
+function updateBorrow(bor: number) {
+  totalBorrowed.value = bor;
 }
 </script>
 
@@ -58,7 +61,10 @@ function updateCollateral(col: number) {
           v-if="visibleYourTable === 'COLLATERAL'"
           @collateral-calced="updateCollateral"
         />
-        <YourBorrowsTable v-else />
+        <YourBorrowsTable
+          v-else
+          @borrow-calced="updateBorrow"
+        />
       </Card>
 
       <div class="flex gap-x-4 lg:flex-row flex-col">
