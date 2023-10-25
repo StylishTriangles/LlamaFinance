@@ -6,6 +6,7 @@ export interface TableColumn {
 }
 
 export interface BasicAsset {
+  denom: string;
   name: string;
   icon: string;
   decimals: number;

@@ -42,7 +42,7 @@ async function onSubmit() {
     return;
 
   const res = await accountStore.financeSDK!.deposit(
-    props.asset.name,
+    props.asset.denom,
     Number(state.assetAmount) * props.asset.precision,
   );
   console.log(res);

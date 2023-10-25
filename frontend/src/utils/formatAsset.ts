@@ -7,6 +7,7 @@ export function rawAssetToBasic(
   userBalance: number,
   price: number) {
   return {
+    denom: asset.denom,
     name: assetsData[asset.denom].name,
     icon: assetsData[asset.denom].icon,
     decimals: asset.assetConfig.decimals,
