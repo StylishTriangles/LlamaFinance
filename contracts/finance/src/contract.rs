@@ -1,8 +1,10 @@
 use std::convert::TryInto;
+use crate::external::query_price;
 
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, BankMsg, Coin, Addr,
 };
+use oracle::msg::PriceResponse;
 
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -21,7 +23,7 @@ pub fn instantiate(
     ASSETS.save(deps.storage, &vec![])?;
     let liquidation_threshold = 70 * RATE_DENOMINATOR / 100; 
     let global_data = GlobalData {
-        oracle: deps.api.addr_validate(&msg.oracle)?,
+        oracle: msg.oracle,
         liquidation_threshold,
     };
     GLOBAL_DATA.save(deps.storage, &global_data)?;
@@ -54,8 +56,8 @@ pub fn execute(
         ExecuteMsg::Repay {} => {
             repay(deps, env, info)
         },
-        ExecuteMsg::Liquidate { denom, amount, target } => {
-            liquidate(deps, env, info, denom, amount, target)
+        ExecuteMsg::Liquidate { user_addr, denom } => {
+            liquidate(deps, env, info, user_addr, denom)
         },
         ExecuteMsg::UpdateUserAssetInfo { user_addr } => {
             update_user_asset_info(deps, env, user_addr)
@@ -428,15 +430,83 @@ fn repay(
     Ok(response)
 }
 
+fn calculate_coins_value(
+    deps: &mut DepsMut,
+    coins: Vec<Coin>,
+    global_data: &GlobalData,
+) -> ContractResult<Uint128> {
+    let mut value = Uint128::zero();
+    for coin in coins.iter() {
+        let PriceResponse {
+            price,
+            symbol: _,
+            precision,
+        } = query_price(deps.as_ref(), global_data.oracle.clone(), coin.denom.clone())?;
+        let coin_value = coin.amount.checked_multiply_ratio(price, precision).ok().ok_or(ContractError::PriceTooHigh {  })?;
+        value = value.checked_add(coin_value).ok().ok_or(ContractError::PriceTooHigh {  })?;
+    }
+    Ok(value)
+}
+
+fn max_liquidation_value(
+    deps: &mut DepsMut,
+    user: Addr,
+    global_data: &GlobalData,
+) -> ContractResult<Uint128> {
+    let mut debt_coins = vec![];
+    let mut collateral_coins = vec![];
+    let assets = ASSETS.load(deps.storage)?;
+    for asset in assets.iter() {
+        let user_key = (&user, asset.as_ref());
+        if let Ok(user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
+            {
+                let amount = user_asset_info.borrow_amount;
+                let coin = Coin {
+                    denom: asset.clone(),
+                    amount,
+                };
+                debt_coins.push(coin);
+            }
+            {
+                let amount = user_asset_info.collateral;
+                let coin = Coin {
+                    denom: asset.clone(),
+                    amount,
+                };
+                collateral_coins.push(coin);
+            }
+        }
+    }
+    let debt_value = calculate_coins_value(deps, debt_coins, global_data)?;
+    let collateral_value = calculate_coins_value(deps, collateral_coins, global_data)?;
+    let no_liquidation = Ok(Uint128::zero());
+    if collateral_value.is_zero() {
+        return no_liquidation;
+    }
+    let ltv = debt_value.checked_multiply_ratio(RATE_DENOMINATOR, collateral_value).ok().ok_or(ContractError::LTVTooHigh {  })?;
+    if ltv <= Uint128::from(global_data.liquidation_threshold) {
+        return no_liquidation;
+    }
+
+    let last_safe_debt_value = collateral_value.checked_multiply_ratio(global_data.liquidation_threshold, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidLiquidationThreshold {  })?;
+    let threshold_delta = RATE_DENOMINATOR.checked_sub(global_data.liquidation_threshold).ok_or(ContractError::InvalidLiquidationThreshold {  })?;
+    let marginal_unsafe_debt_value = debt_value.checked_sub(last_safe_debt_value).ok().ok_or(ContractError::InvalidDebtValue{})?;
+    marginal_unsafe_debt_value.checked_multiply_ratio(RATE_DENOMINATOR, threshold_delta).ok().ok_or(ContractError::InvalidLiquidationThreshold {  })
+}
+
 fn liquidate(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    denom: String,
-    amount: Uint128,
-    target: String,
+    _denom: String,
+    user_addr: String,
 ) -> ContractResult<Response> {
     update(&mut deps, &env, &info.sender)?;
+    let global_data = GLOBAL_DATA.load(deps.storage)?;
+    let user = deps.api.addr_validate(&user_addr)?;
+
+    let _repay_value = calculate_coins_value(&mut deps, info.funds, &global_data)?;
+    let _max_payment = max_liquidation_value(&mut deps, user, &global_data)?;
     Ok(Response::default())
 }
 

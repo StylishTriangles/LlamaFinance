@@ -26,9 +26,8 @@ pub enum ExecuteMsg {
     },
     Repay {},
     Liquidate {
+        user_addr: String,
         denom: String,
-        amount: Uint128,
-        target: String,
     },
     UpdateUserAssetInfo {
         user_addr: String, 

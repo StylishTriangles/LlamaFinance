@@ -46,7 +46,7 @@ pub struct AssetInfo {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct GlobalData {
-    pub oracle: Addr,
+    pub oracle: String,
     pub liquidation_threshold: u32,
 }
 
