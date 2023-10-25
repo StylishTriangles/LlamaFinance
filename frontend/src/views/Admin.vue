@@ -6,6 +6,7 @@ import { Finance, Oracle } from "~/sdk";
 const state = reactive({
   denom: "",
   price: "",
+  precision: "",
   decimals: "",
   targetUtilization: "",
   minRate: "",
@@ -24,7 +25,7 @@ async function addAsset() {
 async function setPrice() {
   if (accountStore.walletAddress && accountStore.signingClient) {
     const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
-    const res2 = await oracle.setPrice(state.denom, Number(state.price));
+    const res2 = await oracle.setPrice(state.denom, Number(state.price), Number(state.precision));
     console.log(res2);
   }
 }
@@ -92,6 +93,15 @@ async function logPrices() {
         </label>
         <input
           v-model="state.price"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <label class="label">
+          <span class="label-text text-neutral-content">Precision</span>
+        </label>
+        <input
+          v-model="state.precision"
           type="text"
           class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
           autocomplete="off"

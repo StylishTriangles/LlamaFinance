@@ -1,7 +1,5 @@
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
-const DEFAULT_PRECISION: number = 1_000_000;
-
 interface PriceResponse {
     symbol: string
     price: string
@@ -47,11 +45,12 @@ export class Oracle {
         );
     }
 
-    async setPrice(symbol: string, price: number) {
+    async setPrice(symbol: string, price: number, precision: number) {
         let msg = {
             setPrice: {
                 symbol,
-                price: (price * DEFAULT_PRECISION).toFixed(0)
+                price: (price * precision).toFixed(0),
+                precision: precision.toFixed(0)
             }
         };
         return await this.client.execute(
