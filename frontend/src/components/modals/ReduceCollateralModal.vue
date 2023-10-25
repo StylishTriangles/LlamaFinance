@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
+import type { UserAssetInfoResponse } from "~/sdk";
 import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
@@ -16,24 +17,38 @@ const state = reactive({
   assetUsdValue: 0,
   error: "",
   isLoading: false,
-  maxBalance: 9999,
-  colSoFar: 1000,
-  liqMargin: 20.1,
-  ltv: 2.1,
+  maxBalance: 0,
+  colSoFar: 0,
+  liqMargin: 0,
+  ltv: 0,
+});
+const rawUserData = ref(null as null | Map<string, UserAssetInfoResponse>);
+
+onBeforeMount(async () => {
+  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  state.colSoFar = rawUserData.value.get(props.asset.denom)!.collateralUSD;
+  state.maxBalance = state.colSoFar;
+  state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
+  state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
 });
 
 const collateralBalance = computed(() =>
   state.colSoFar - state.assetUsdValue,
 );
-const newLiqMargin = computed(() =>
-  15.24, // TODO
-);
-const newLTV = computed(() =>
-  3.24, // TODO
-);
-const interestAPR = computed(() =>
-  15.24, // TODO
-);
+const newLTV = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLTVafter(
+    rawUserData.value,
+    props.asset.denom,
+    Number(state.assetAmount) * -1,
+  ) * 100;
+});
+const newLiqMargin = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100;
+});
 
 function onInputChange(value: string) {
   state.assetAmount = value;
@@ -124,14 +139,6 @@ async function onSubmit() {
           </span>
         </template>
       </div>
-    </div>
-    <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Interest APR
-      </span>
-      <span class="font-medium">
-        {{ formatPctValue(interestAPR) }}
-      </span>
     </div>
   </BaseModal>
 </template>

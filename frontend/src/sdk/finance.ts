@@ -240,8 +240,8 @@ export class Finance {
           userAssetsInfo[i],
           assetsInfo[i].denom,
           assetsInfo[i].assetConfig.decimals,
-          prices[assetsInfo[i].denom].price
-        )
+          prices[assetsInfo[i].denom].price,
+        ),
       );
 
     return ret;
@@ -290,6 +290,9 @@ export class Finance {
         totalCollateralUSD += uai.collateralUSD;
       totalBorrowUSD += uai.borrowAmountUSD;
     }
+    if (totalCollateralUSD < 1e-6)
+      return 0;
+
     return totalBorrowUSD / totalCollateralUSD;
   }
 
@@ -307,7 +310,7 @@ export class Finance {
       totalCollateralUSD += uai.collateralUSD;
       totalBorrowUSD += uai.borrowAmountUSD;
     }
-    
+
     const ltv = totalBorrowUSD / totalCollateralUSD;
     const liquidationMargin = this.getLiquidationMargin(ltv);
     const maxLoanAmountUSD = totalCollateralUSD * liquidationMargin;
