@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Uint128, Timestamp};
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -41,11 +41,11 @@ pub struct AssetInfo {
     pub total_collateral: Uint128,
     pub cumulative_interest: Uint128,
     pub asset_config: AssetConfig,
+    pub last_update: Timestamp,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct GlobalData {
-    pub last_update: u64,
     pub oracle: Addr,
 }
 

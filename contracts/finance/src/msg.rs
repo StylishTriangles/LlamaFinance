@@ -25,6 +25,9 @@ pub enum ExecuteMsg {
         amount: Uint128,
     },
     Repay {},
+    UpdateUserAssetInfo {
+        user_addr: String, 
+    },
     UpdateAsset {
         denom: String,
         decimals: u16,
