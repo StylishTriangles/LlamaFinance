@@ -5,10 +5,106 @@
     {
       "type": "object",
       "required": [
-        "config"
+        "assets"
       ],
       "properties": {
-        "config": {
+        "assets": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "userAssetsInfo"
+      ],
+      "properties": {
+        "userAssetsInfo": {
+          "type": "object",
+          "required": [
+            "user"
+          ],
+          "properties": {
+            "user": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "userAssetInfo"
+      ],
+      "properties": {
+        "userAssetInfo": {
+          "type": "object",
+          "required": [
+            "denom",
+            "user"
+          ],
+          "properties": {
+            "denom": {
+              "type": "string"
+            },
+            "user": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "userData"
+      ],
+      "properties": {
+        "userData": {
+          "type": "object",
+          "required": [
+            "user"
+          ],
+          "properties": {
+            "user": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "assetInfo"
+      ],
+      "properties": {
+        "assetInfo": {
+          "type": "object",
+          "required": [
+            "denom"
+          ],
+          "properties": {
+            "denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "assetsInfo"
+      ],
+      "properties": {
+        "assetsInfo": {
           "type": "object"
         }
       },

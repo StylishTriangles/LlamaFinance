@@ -3,11 +3,15 @@
   "title": "PriceResponse",
   "type": "object",
   "required": [
-    "price"
+    "price",
+    "symbol"
   ],
   "properties": {
     "price": {
       "$ref": "#/definitions/Uint128"
+    },
+    "symbol": {
+      "type": "string"
     }
   },
   "definitions": {

@@ -23,10 +23,6 @@ pub enum QueryMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct PriceResponse {
+    pub symbol: String,
     pub price: Uint128,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct PricesResponse {
-    pub prices: Vec<(String, Uint128)>,
 }
