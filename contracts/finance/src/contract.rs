@@ -103,28 +103,31 @@ fn deposit_collateral(
 }
 
 fn convert_asset_to_l_asset(
-    amount_asset: Uint128,
-    total_deposit: Uint128,
-    total_l_asset: Uint128,
-) -> Uint128 {
-    amount_asset.checked_multiply_ratio(total_l_asset, total_deposit).unwrap()
+    amount: Uint128,
+    asset_info: &AssetInfo,
+) -> ContractResult<Uint128> {
+    amount.checked_multiply_ratio(asset_info.total_l_asset, asset_info.total_deposit).ok().ok_or(ContractError::TooManyLAssets{})
 }
 
 fn convert_l_asset_to_asset(
-    amount_l_asset: Uint128,
-    total_deposit: Uint128,
-    total_l_asset: Uint128,
-) -> Uint128 {
-    amount_l_asset.checked_multiply_ratio(total_deposit, total_l_asset).unwrap()
+    amount: Uint128,
+    asset_info: &AssetInfo,
+) -> ContractResult<Uint128> {
+    amount.checked_multiply_ratio(asset_info.total_deposit, asset_info.total_l_asset).ok().ok_or(ContractError::TooManyLAssets{})
 }
 
 fn calculate_rate(asset_info: &AssetInfo) -> ContractResult<u32> {
     let config = &asset_info.asset_config;
-    let rate_delta = config.optimal_rate.checked_sub(config.min_rate).ok_or(ContractError::InvalidOptimalRate {  })?;
     let util_rate = asset_info.total_borrow.checked_multiply_ratio(RATE_DENOMINATOR, asset_info.total_deposit).ok().ok_or(ContractError::InvalidUtilizationRatio {  })?;
-    if util_rate > Uint128::from(config.target_utilization_rate_bps) {
-        Ok(0)
+
+    if let Ok(util_delta) = util_rate.checked_sub(Uint128::from(config.target_utilization_rate_bps)) {
+        let max_util_delta = RATE_DENOMINATOR.checked_sub(config.target_utilization_rate_bps.into()).ok_or(ContractError::InvalidTargetUtilization {  })?;
+        let rate_delta = config.max_rate.checked_sub(config.optimal_rate).ok_or(ContractError::InvalidMaxRate {  })?;
+        let util_delta_rate = util_delta.checked_multiply_ratio(rate_delta, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidUtilizationRatio {  })?;
+        let nonlinear_rate = util_delta_rate.checked_multiply_ratio(RATE_DENOMINATOR, max_util_delta).ok().ok_or(ContractError::InvalidTargetUtilization {  })?;
+        nonlinear_rate.u128().try_into().ok().ok_or(ContractError::InvalidTargetUtilization {  })
     } else {
+        let rate_delta = config.optimal_rate.checked_sub(config.min_rate).ok_or(ContractError::InvalidOptimalRate {  })?;
         let linear_rate = util_rate.checked_multiply_ratio(rate_delta, config.target_utilization_rate_bps).ok().ok_or(ContractError::InvalidTargetUtilization{})?;
         let rate = linear_rate.checked_add(Uint128::from(config.min_rate)).ok().ok_or(ContractError::InvalidMinRate {  })?;
         rate.u128().try_into().ok().ok_or(ContractError::InvalidMinRate {  })
@@ -146,8 +149,9 @@ fn update(
             0
         };
         let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
-        let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
-        let final_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
+        let new_interest_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
+        let new_interest = new_interest_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
+        let final_cumulative_rate = asset_info.cumulative_interest.saturating_add(new_interest);
 
         let user_key = (user, denom.as_ref());
         if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
@@ -156,8 +160,8 @@ fn update(
             USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
         }
         let final_total_borrow = asset_info.total_borrow.checked_multiply_ratio(final_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
-        let new_interest = final_total_borrow.saturating_sub(asset_info.total_borrow);
-        let final_total_deposit = asset_info.total_deposit.saturating_add(new_interest);
+        let new_deposit = final_total_borrow.saturating_sub(asset_info.total_borrow);
+        let final_total_deposit = asset_info.total_deposit.saturating_add(new_deposit);
 
         asset_info.cumulative_interest = final_cumulative_rate;
         asset_info.total_borrow = final_total_borrow;
@@ -189,7 +193,7 @@ fn deposit(
     for coin in info.funds.iter() {
         // Fetch global cumulative interest for this asset
         let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
-        let l_asset_amt = convert_asset_to_l_asset(coin.amount, asset_info.total_deposit, asset_info.total_l_asset);
+        let l_asset_amt = convert_asset_to_l_asset(coin.amount, &asset_info)?;
 
 
         USER_ASSET_INFO.update(
@@ -235,7 +239,7 @@ fn withdraw(
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
     let user_addr = info.sender;
-    let asset_amount = convert_l_asset_to_asset(amount, asset_info.total_deposit, asset_info.total_l_asset);
+    let asset_amount = convert_l_asset_to_asset(amount, &asset_info)?;
 
     USER_ASSET_INFO.update(
         deps.storage, 
@@ -420,7 +424,7 @@ fn repay(
 }
 
 fn update_asset(
-    deps: DepsMut,
+    mut deps: DepsMut,
     env: Env,
     _info: MessageInfo,
     denom: String,
@@ -474,6 +478,7 @@ fn update_asset(
         assets.push(denom.clone());
         ASSETS.save(deps.storage, &assets)?;
     }
+    update(&mut deps, &env, &env.contract.address)?;
 
     Ok(Response::default())
 }

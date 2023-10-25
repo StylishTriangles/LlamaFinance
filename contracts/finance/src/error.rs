@@ -51,6 +51,9 @@ pub enum ContractError {
     #[error("invalid optimal rate")]
     InvalidOptimalRate {},
 
+    #[error("invalid max rate")]
+    InvalidMaxRate {},
+
     #[error("invalid utilization ratio")]
     InvalidUtilizationRatio {},
 
@@ -59,6 +62,12 @@ pub enum ContractError {
 
     #[error("invalid min rate")]
     InvalidMinRate {},
+
+    #[error("invalid min rate")]
+    InvalidMinRate {},
+
+    #[error("too many l assets")]
+    TooManyLAssets {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
