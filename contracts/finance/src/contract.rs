@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, BankMsg, Coin, Addr,
 };
@@ -118,10 +120,15 @@ fn convert_l_asset_to_asset(
 
 fn calculate_rate(asset_info: &AssetInfo) -> ContractResult<u32> {
     let config = &asset_info.asset_config;
-    // let rate_delta = config.optimal_rate.checked_sub(config.min_rate).ok_or(ContractError::InvalidOptimalRate {  })?.into();
-    // let linear_rate = asset_info.
-
-    Ok(config.optimal_rate)
+    let rate_delta = config.optimal_rate.checked_sub(config.min_rate).ok_or(ContractError::InvalidOptimalRate {  })?;
+    let util_rate = asset_info.total_borrow.checked_multiply_ratio(RATE_DENOMINATOR, asset_info.total_deposit).ok().ok_or(ContractError::InvalidUtilizationRatio {  })?;
+    if util_rate > Uint128::from(config.target_utilization_rate_bps) {
+        Ok(0)
+    } else {
+        let linear_rate = util_rate.checked_multiply_ratio(rate_delta, config.target_utilization_rate_bps).ok().ok_or(ContractError::InvalidTargetUtilization{})?;
+        let rate = linear_rate.checked_add(Uint128::from(config.min_rate)).ok().ok_or(ContractError::InvalidMinRate {  })?;
+        rate.u128().try_into().ok().ok_or(ContractError::InvalidMinRate {  })
+    }
 }
 
 fn update(
@@ -133,8 +140,12 @@ fn update(
     let assets = ASSETS.load(deps.storage)?;
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        let rate = if asset_info.total_deposit.is_zero() {
+            calculate_rate(&asset_info)?
+        } else {
+            0
+        };
         let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
-        let rate = calculate_rate(&asset_info)?;
         let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
         let final_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
 
