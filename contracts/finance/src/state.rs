@@ -41,11 +41,11 @@ pub struct AssetInfo {
     pub total_collateral: Uint128,
     pub cumulative_interest: Uint128,
     pub asset_config: AssetConfig,
+    pub last_update: Timestamp,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct GlobalData {
-    pub last_update: Timestamp,
     pub oracle: Addr,
 }
 

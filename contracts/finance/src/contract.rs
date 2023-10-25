@@ -5,20 +5,19 @@ use cosmwasm_std::{
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
-use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, USER_DATA, UserData, GLOBAL_DATA, GlobalData, RATE_DENOMINATOR, SECONDS_IN_YEAR};
+use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, GLOBAL_DATA, GlobalData, RATE_DENOMINATOR, SECONDS_IN_YEAR};
 use crate::query::query_handler;
 
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> ContractResult<Response> {
     ADMIN.save(deps.storage, &info.sender)?;
     ASSETS.save(deps.storage, &vec![])?;
     let global_data = GlobalData {
-        last_update: env.block.time,
         oracle: deps.api.addr_validate(&msg.oracle)?,
     };
     GLOBAL_DATA.save(deps.storage, &global_data)?;
@@ -51,6 +50,9 @@ pub fn execute(
         ExecuteMsg::Repay {} => {
             repay(deps, env, info)
         },
+        ExecuteMsg::UpdateUserAssetInfo { user_addr } => {
+            update_user_asset_info(deps, env, user_addr)
+        },
         ExecuteMsg::UpdateAsset { denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate } => {
             update_asset(deps, env, info, denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate)
         }
@@ -58,19 +60,16 @@ pub fn execute(
 }
 
 fn deposit_collateral(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
 ) -> Result<Response, ContractError> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
 
     for coin in info.funds.iter() {
-        if !check_asset(deps.as_ref(), coin.denom.clone()) {
-            return Err(ContractError::InvalidAssetDeposit {  });
-        }
         // Fetch global cumulative interest for this asset
-        let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom).unwrap();
+        let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
 
         USER_ASSET_INFO.update(
             deps.storage, 
@@ -121,26 +120,21 @@ fn get_rate(asset_info: &AssetInfo) -> u32 {
     asset_info.asset_config.optimal_rate
 }
 
-fn get_price(global_data: &GlobalData, denom: String) -> Uint128 {
-    Uint128::new(1)
-}
-
 fn update(
-    deps: DepsMut,
-    env: Env,
-    user: Addr,
+    deps: &mut DepsMut,
+    env: &Env,
+    user: &Addr,
 ) -> Result<(), ContractError> {
     let now = env.block.time;
-    let mut global_data = GLOBAL_DATA.load(deps.storage)?;
-    let time_elapsed = now.nanos().checked_sub(global_data.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
     let assets = ASSETS.load(deps.storage)?;
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
         let rate = get_rate(&asset_info);
         let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
         let final_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
 
-        let user_key = (&user, denom.as_ref());
+        let user_key = (user, denom.as_ref());
         if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
             let final_borrow_amount = user_asset_info.borrow_amount.checked_multiply_ratio(final_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
             let total_borrow_without_user = asset_info.total_borrow.checked_sub(user_asset_info.borrow_amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
@@ -150,26 +144,33 @@ fn update(
             USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
         }
         asset_info.cumulative_interest = final_cumulative_rate;
+        asset_info.last_update = now;
         ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
     }
-    global_data.last_update = now;
     Ok(())
 }
 
+fn update_user_asset_info(
+    mut deps: DepsMut,
+    env: Env,
+    user_addr: String,
+) -> ContractResult<Response> {
+    let user = deps.api.addr_validate(&user_addr)?;
+    update(&mut deps, &env, &user)?;
+    Ok(Response::default())
+}
+
 fn deposit(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
 ) -> ContractResult<Response> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
 
     for coin in info.funds.iter() {
-        if !check_asset(deps.as_ref(), coin.denom.clone()) {
-            return Err(ContractError::InvalidAssetDeposit {  });
-        }
         // Fetch global cumulative interest for this asset
-        let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom).unwrap();
+        let mut asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
         let l_asset_amt = convert_asset_to_l_asset(coin.amount, asset_info.total_deposit, asset_info.total_l_asset);
 
 
@@ -203,19 +204,15 @@ fn deposit(
     Ok(Response::default())
 }
 
-fn check_asset(deps: Deps, asset: String) -> bool {
-    let assets = ASSETS.load(deps.storage).unwrap();
-    assets.contains(&asset)
-}
 
 fn withdraw(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     denom: String,
     amount: Uint128,
 ) -> Result<Response, ContractError> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
@@ -254,13 +251,13 @@ fn withdraw(
 }
 
 fn withdraw_collateral(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     denom: String,
     amount: Uint128,
 ) -> ContractResult<Response> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
@@ -301,13 +298,13 @@ fn withdraw_collateral(
 }
 
 fn borrow(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     denom: String,
     amount: Uint128,
 ) -> ContractResult<Response> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
 
@@ -352,11 +349,11 @@ fn borrow(
 }
 
 fn repay(
-    deps: DepsMut,
-    _env: Env,
+    mut deps: DepsMut,
+    env: Env,
     info: MessageInfo,
 ) -> ContractResult<Response> {
-    // TODO: update global and user state
+    update(&mut deps, &env, &info.sender)?;
 
     let mut coins_to_return = vec![];
 
@@ -406,7 +403,7 @@ fn repay(
 
 fn update_asset(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     _info: MessageInfo,
     denom: String,
     target_utilization_rate_bps: u16,
@@ -439,6 +436,7 @@ fn update_asset(
                             total_l_asset: Uint128::zero(),
                             total_collateral: Uint128::zero(),
                             cumulative_interest: Uint128::from(1u128<<64),
+                            last_update: env.block.time,
                             asset_config: AssetConfig {
                                 target_utilization_rate_bps,
                                 decimals,
