@@ -93,19 +93,21 @@ fn first() -> Result<(), String> {
         ]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit: {}", e))?;
     }
-    {
+    let t1 = {
         let msg = ExecuteMsg::Borrow { 
             denom: usdc.clone(), 
             amount: Uint128::new(30_000), 
         };
         let env = mock_env();
+        let t = Timestamp::from_nanos(env.block.time.nanos() + NANOSECONDS_IN_YEAR);
         let info = mock_info(&alice, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("borrow: {}", e))?;
-    }
+        t
+    };
     {
         let msg = ExecuteMsg::UpdateUserAssetInfo { user_addr: alice.clone() };
         let mut env = mock_env();
-        // env.block.time = Timestamp::from_nanos(env.block.time.nanos() + 
+        env.block.time = t1;
         let info = mock_info(&alice, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("update asset info: {}", e))?;
     }
