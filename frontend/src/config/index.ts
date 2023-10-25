@@ -19,9 +19,10 @@ export const modalsID = {
   BORROW: "borrow_modal",
   COLLATERAL: "collateral_modal",
   WITHDRAW: "withdraw_modal",
+  TXN_SUCCESS: "txn_success",
 };
 
 export const contractAddresses = {
   ORACLE_ADDRESS: "testcore1s8pm5qeu8das9jlvneuv9wushaars6qg3l3a85jhzsf23w6m4g7qad8w03",
   FINANCE_ADDRESS: "",
-}
+};

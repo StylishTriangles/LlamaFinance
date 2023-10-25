@@ -45,7 +45,12 @@ function onDisconnect() {
         </div>
       </li>
       <li>
-        <a :href="explorerLink" target="_blank" class="flex">
+        <a
+          :href="explorerLink"
+          class="flex"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <ExternalLinkIcon class="w-4 shrink-0" />
           <span>Explorer</span>
         </a>

@@ -7,17 +7,17 @@ const initialModalsData = {
   assetToWithdraw: null as any,
   assetToBorrow: null as any,
   assetToCollateralize: null as any,
-  txnSuccessData: null as any,
+  txnHash: null as string | null,
 };
 
 const state = reactive({ ...initialModalsData });
 
 onMounted(() => {
-  // emitter.on("txn-success", openTxnSuccessModal);
   emitter.on("open-deposit-modal", openDepositModal);
   emitter.on("open-withdraw-modal", openWithdrawModal);
   emitter.on("open-borrow-modal", openBorrowModal);
   emitter.on("open-collateral-modal", openCollateralModal);
+  emitter.on("txn-success", openTxnSuccessModal);
 });
 
 function openDepositModal(asset: any) {
@@ -39,6 +39,11 @@ function openCollateralModal(asset: any) {
   closeModals();
   state.assetToCollateralize = asset;
   openModal(modalsID.COLLATERAL);
+}
+function openTxnSuccessModal(hash: string) {
+  closeModals();
+  state.txnHash = hash;
+  openModal(modalsID.TXN_SUCCESS);
 }
 async function openModal(id: string) {
   await nextTick(); // wait for modal that is going to be rendered
@@ -74,6 +79,11 @@ function closeModals() {
       v-if="state.assetToWithdraw"
       :key="state.assetToWithdraw"
       :asset="state.assetToWithdraw"
+    />
+    <TxnSuccessModal
+      v-if="state.txnHash"
+      :key="state.txnHash"
+      :txn-hash="state.txnHash"
     />
   </div>
 </template>
