@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { formatUSDAmount } from "~/utils";
+import { formatAssetAmount, formatUSDAmount } from "~/utils";
 
 const props = defineProps({
   value: {
@@ -90,7 +90,7 @@ function onInput() {
     <label class="label">
       <span class="label-text-alt text-neutral-content">{{ formatUSDAmount(usdValue) }}</span>
       <span v-if="max > 0" class="label-text-alt text-neutral-content">
-        <span class="font-bold mr-2">Total balance: {{ max }} </span>
+        <span class="font-bold mr-2">Total balance: {{ formatAssetAmount(max) }} </span>
         <span class="text-accent cursor-pointer" @click="setMax">MAX</span>
       </span>
     </label>

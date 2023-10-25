@@ -52,7 +52,11 @@ function onSubmit() {
 </script>
 
 <template>
-  <BaseModal :id="modalsID.BORROW" :title="`Borrow ${asset.name}`" @submit="onSubmit">
+  <BaseModal
+    :id="modalsID.BORROW"
+    :title="`Borrow ${asset.name}`"
+    @submit="onSubmit"
+  >
     <NumberInput
       :value="state.assetAmount"
       :usd-value="state.assetUsdValue"

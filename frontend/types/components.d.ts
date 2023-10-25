@@ -12,6 +12,7 @@ declare module 'vue' {
     BaseTable: typeof import('./../src/components/tables/BaseTable.vue')['default']
     BorrowModal: typeof import('./../src/components/modals/BorrowModal.vue')['default']
     BorrowsTable: typeof import('./../src/components/tables/BorrowsTable.vue')['default']
+    Card: typeof import('./../src/components/Card.vue')['default']
     CollateralModal: typeof import('./../src/components/modals/CollateralModal.vue')['default']
     CollateralTable: typeof import('./../src/components/tables/CollateralTable.vue')['default']
     DepositModal: typeof import('./../src/components/modals/DepositModal.vue')['default']
@@ -22,5 +23,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ThemeChange: typeof import('./../src/components/ThemeChange/index.vue')['default']
     WalletButton: typeof import('./../src/components/WalletButton.vue')['default']
+    WithdrawModal: typeof import('./../src/components/modals/WithdrawModal.vue')['default']
+    YourDepositsTable: typeof import('./../src/components/tables/YourDepositsTable.vue')['default']
   }
 }

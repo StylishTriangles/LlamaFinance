@@ -62,33 +62,28 @@ const tableData = [
     borrow_apy: formatPctValue(31.31),
   },
 ];
+
+const tvl = ref(575843280.53);
 </script>
 
 <template>
-  <div class="card bg-neutral text-neutral-content rounded-xl mt-12 lg:mt-32 shadow-2xl">
-    <div class="card-body">
-      <div class="flex items-start justify-between mb-10">
-        <h2 class="card-title text-xl md:text-3xl">
-          Assets
-        </h2>
-        <div class="text-right text-base md:text-xl font-medium">
-          <p class="font-bold">
-            TVL
-          </p>
-          <p>{{ formatUSDAmount(575843280.53) }}</p>
+  <Card title="Assets">
+    <template #top-right>
+      <p class="font-bold">
+        TVL
+      </p>
+      <p>{{ formatUSDAmount(tvl) }}</p>
+    </template>
+    <BaseTable
+      :columns="columns"
+      :data="tableData"
+    >
+      <template #asset="row">
+        <div class="flex gap-x-2 items-center">
+          <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
+          <p>{{ row.asset }}</p>
         </div>
-      </div>
-      <BaseTable
-        :columns="columns"
-        :data="tableData"
-      >
-        <template #asset="row">
-          <div class="flex gap-x-2 items-center">
-            <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-            <p>{{ row.asset }}</p>
-          </div>
-        </template>
-      </BaseTable>
-    </div>
-  </div>
+      </template>
+    </BaseTable>
+  </Card>
 </template>

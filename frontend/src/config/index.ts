@@ -16,4 +16,5 @@ export const modalsID = {
   DEPOSIT: "deposit_modal",
   BORROW: "borrow_modal",
   COLLATERAL: "collateral_modal",
+  WITHDRAW: "withdraw_modal",
 };

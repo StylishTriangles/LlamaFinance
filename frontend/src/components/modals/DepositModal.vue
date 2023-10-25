@@ -47,7 +47,11 @@ function onSubmit() {
 </script>
 
 <template>
-  <BaseModal :id="modalsID.DEPOSIT" :title="`Deposit ${asset.name}`" @submit="onSubmit">
+  <BaseModal
+    :id="modalsID.DEPOSIT"
+    :title="`Deposit ${asset.name}`"
+    @submit="onSubmit"
+  >
     <NumberInput
       :value="state.assetAmount"
       :usd-value="state.assetUsdValue"
