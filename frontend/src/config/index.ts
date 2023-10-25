@@ -25,6 +25,6 @@ export const modalsID = {
 };
 
 export const contractAddresses = {
-  ORACLE_ADDRESS: "testcore1s8pm5qeu8das9jlvneuv9wushaars6qg3l3a85jhzsf23w6m4g7qad8w03",
-  FINANCE_ADDRESS: "",
+  ORACLE_ADDRESS: "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
+  FINANCE_ADDRESS: "testcore15y3frp5m63d4qew4emuxefzga0u3hguu8tz4qvtmfakqd8neeulszzlvep",
 };
