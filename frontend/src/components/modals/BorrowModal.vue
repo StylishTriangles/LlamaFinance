@@ -16,7 +16,7 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  isLoading: false,
+  isLoading: true,
   maxBalance: 0,
   borrowedSoFar: 0,
   liqMargin: 0,
@@ -31,6 +31,7 @@ onBeforeMount(async () => {
   state.maxBalance = Number((Number(accountStore.financeSDK!.getMaxLoanAmount(rawUserData.value, props.asset.denom).toFixed(props.asset.decimals)) - (1 * 10 ** (-1 * props.asset.decimals))).toFixed(props.asset.decimals));
   state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
   state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
+  state.isLoading = false;
 });
 
 const totalBorrow = computed(() =>
