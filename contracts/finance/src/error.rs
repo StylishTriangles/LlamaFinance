@@ -32,6 +32,9 @@ pub enum ContractError {
 
     #[error("user doesn't have this asset")]
     UserDoesntHaveAsset {},
+
+    #[error("clock skew")]
+    ClockSkew {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;

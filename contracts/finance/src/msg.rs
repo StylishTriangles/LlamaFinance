@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
+    pub oracle: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -28,9 +29,9 @@ pub enum ExecuteMsg {
         denom: String,
         decimals: u16,
         target_utilization_rate_bps: u16,
-        k0: Uint128,
-        k1: Uint128,
-        k2: Uint128,
+        min_rate: u32,
+        optimal_rate: u32,
+        max_rate: u32,
     },
 }
 
