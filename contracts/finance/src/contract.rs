@@ -273,7 +273,7 @@ fn withdraw(
     asset_info.total_deposit = asset_info.total_deposit.checked_sub(asset_amount).ok().ok_or(ContractError::InsufficientFunds {})?;
 
     // Don't allow to withdraw more than is available
-    if asset_info.total_l_asset < asset_info.total_borrow {
+    if asset_info.total_deposit < asset_info.total_borrow {
         return Err(ContractError::InsufficientFunds {});
     }
 
@@ -376,7 +376,7 @@ fn borrow(
 
     asset_info.total_borrow += amount;
 
-    if asset_info.total_l_asset < asset_info.total_borrow {
+    if asset_info.total_deposit < asset_info.total_borrow {
         return Err(ContractError::InsufficientFunds {});
     }
 
