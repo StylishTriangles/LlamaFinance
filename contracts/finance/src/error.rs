@@ -35,6 +35,15 @@ pub enum ContractError {
 
     #[error("clock skew")]
     ClockSkew {},
+
+    #[error("invalid rate")]
+    InvalidRate {},
+
+    #[error("invalid cumulative interest")]
+    InvalidCumulativeInterest {},
+
+    #[error("invalid time elapsed")]
+    InvalidTimeElapsed {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
