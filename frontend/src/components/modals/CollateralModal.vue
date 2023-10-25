@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
+import type { UserAssetInfoResponse } from "~/sdk";
 import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
@@ -18,19 +19,35 @@ const state = reactive({
   isLoading: false,
   maxBalance: props.asset.balance,
   colSoFar: 0,
-  liqMargin: 20.1,
-  ltv: 2.1,
+  liqMargin: 0,
+  ltv: 0,
+});
+const rawUserData = ref(null as null | Map<string, UserAssetInfoResponse>);
+
+onBeforeMount(async () => {
+  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  state.colSoFar = rawUserData.value.get(props.asset.denom)!.collateralUSD;
+  state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
+  state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
 });
 
 const collateralBalance = computed(() =>
   state.colSoFar + state.assetUsdValue,
 );
-const newLiqMargin = computed(() =>
-  15.24, // TODO
-);
-const newLTV = computed(() =>
-  3.24, // TODO
-);
+const newLTV = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLTVafter(
+    rawUserData.value,
+    props.asset.denom,
+    Number(state.assetAmount),
+  ) * 100;
+});
+const newLiqMargin = computed(() => {
+  if (!rawUserData.value)
+    return 0;
+  return accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100;
+});
 
 function onInputChange(value: string) {
   state.assetAmount = value;
