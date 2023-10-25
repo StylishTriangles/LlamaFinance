@@ -1,10 +1,11 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, Coin, Uint128};
+use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct UserAssetInfo {
     pub collateral: Uint128,
     pub borrow_amount: Uint128,
@@ -13,6 +14,7 @@ pub struct UserAssetInfo {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct UserData {
     pub last_update_time: u64,
     pub ltv: Uint128,
@@ -20,6 +22,7 @@ pub struct UserData {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct AssetConfig {
     pub target_utilization_rate_bps: u16,
     pub decimals: u16,
@@ -29,6 +32,7 @@ pub struct AssetConfig {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct AssetInfo {
     /// For FE
     pub apr: Uint128,

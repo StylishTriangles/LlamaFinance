@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Uint128};
+use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +7,7 @@ pub struct InstantiateMsg {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum ExecuteMsg {
     Deposit {},
     Withdraw {
@@ -35,8 +35,21 @@ pub enum ExecuteMsg {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum QueryMsg {
-    Config {},
+    Assets {},
+    UserAssetsInfo {
+        user: String
+    },
+    UserAssetInfo {
+        user: String,
+        denom: String,
+    },
+    UserData {
+        user: String,
+    },
+    AssetInfo {
+        denom: String,
+    },
+    AssetsInfo {},
 }
-
