@@ -1,53 +1,53 @@
+<!-- Not visible for basic users, used for setting up assets -->
 <script setup lang="ts">
-import { contractAddresses } from '~/config';
-import { Oracle, Finance } from '~/sdk';
-// import { coin } from "@cosmjs/stargate";
+import { contractAddresses } from "~/config";
+import { Finance, Oracle } from "~/sdk";
 
-const denom = ref('');
-
-const price = ref('');
-
-const decimals = ref('');
-const target_utilization = ref('');
-const min_rate = ref('');
-const optimal_rate = ref('');
-const max_rate = ref('');
+const state = reactive({
+  denom: "",
+  price: "",
+  decimals: "",
+  targetUtilization: "",
+  minRate: "",
+  optimalRate: "",
+  maxRate: "",
+});
 
 async function addAsset() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    let oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
-    let res2 = await oracle.addSymbol(denom.value);
+    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
+    const res2 = await oracle.addSymbol(state.denom);
     console.log(res2);
   }
 }
 
 async function setPrice() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    let oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
-    let res2 = await oracle.setPrice(denom.value, price.value);
+    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
+    const res2 = await oracle.setPrice(state.denom, Number(state.price));
     console.log(res2);
   }
 }
 
 async function updateAsset() {
-    if (accountStore.walletAddress && accountStore.signingClient) {
-        let finance = new Finance(accountStore.signingClient, accountStore.walletAddress, contractAddresses.FINANCE_ADDRESS);
-        let res2 = await finance.updateAsset(
-            denom.value, 
-            decimals.value, 
-            target_utilization.value, 
-            min_rate.value, 
-            optimal_rate.value, 
-            max_rate.value
-        );
-        console.log(res2);
-    }
+  if (accountStore.walletAddress && accountStore.signingClient) {
+    const finance = new Finance(accountStore.signingClient, accountStore.walletAddress, contractAddresses.FINANCE_ADDRESS);
+    const res2 = await finance.updateAsset(
+      state.denom,
+      Number(state.decimals),
+      Number(state.targetUtilization),
+      Number(state.minRate),
+      Number(state.optimalRate),
+      Number(state.maxRate),
+    );
+    console.log(res2);
+  }
 }
 
 async function logPrices() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    let oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
-    let res = await oracle.getPrices();
+    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
+    const res = await oracle.getPrices();
     console.log(res);
   }
 }
@@ -55,42 +55,119 @@ async function logPrices() {
 
 <template>
   <div class="px-[1rem] md:px-[4rem]">
-    <div>
-        <a class="text-3xl">Oracle</a><br>
-        <a class="text-xl" style="margin-left: 10px;">Add Asset</a><br>
-        <!-- <form style="margin-left: 10px;"> -->
-        <div style="margin-left: 20px;">
-            <label for="denom">Asset denom:</label><br>
-            <input v-model="denom" type="text"><br>
-            <button @click="addAsset">ADD</button>
-        </div>
-        <!-- </form> -->
-        <a class="text-xl" style="margin-left: 10px;">Set Price</a><br>
-        <div style="margin-left: 20px;">
-            <label for="denom">Asset denom:</label><br>
-            <input v-model="denom" type="text"><br>
-            <label for="price">Price:</label><br>
-            <input v-model="price" type="text"><br>
-            <button @click="setPrice">SET</button>
-        </div>
-        <a class="text-3xl">Finance</a><br>
-        <a class="text-xl" style="margin-left: 10px;">Update Asset</a><br>
-        <div style="margin-left: 20px;">
-            <label for="denom">Asset denom:</label><br>
-            <input v-model="denom" type="text"><br>
-            <label for="decimals">Decimals:</label><br>
-            <input v-model="decimals" type="text"><br>
-            <label for="target_utilization">Target Utilization (%):</label><br>
-            <input v-model="target_utilization" type="text"><br>
-            <label for="min_rate">Rates (%):</label><br>
-            <input v-model="min_rate" type="text">
-            <input v-model="optimal_rate" type="text">
-            <input v-model="max_rate" type="text"><br>
-            <button @click="updateAsset">UPDATE</button>
-        </div>
+    <Card title="Oracle">
+      <p class="text-xl">
+        Add Asset
+      </p>
+      <div class="ml-10 flex-col">
+        <label class="label">
+          <span class="label-text text-neutral-content">Asset denom</span>
+        </label>
+        <input
+          v-model="state.denom"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <button class="btn btn-primary ml-2" @click="addAsset">
+          ADD
+        </button>
+      </div>
 
+      <p class="text-xl" style="margin-left: 10px;">
+        Set Price
+      </p>
+      <div class="ml-10 flex-col">
+        <label class="label">
+          <span class="label-text text-neutral-content">Asset denom</span>
+        </label>
+        <input
+          v-model="state.denom"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <label class="label">
+          <span class="label-text text-neutral-content">Price</span>
+        </label>
+        <input
+          v-model="state.price"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+
+        <button class="btn btn-primary ml-2" @click="setPrice">
+          SET
+        </button>
+      </div>
+    </Card>
+
+    <Card title="Finance">
+      <p class="text-xl" style="margin-left: 10px;">
+        Update Asset
+      </p>
+      <div class="ml-10 flex-col">
+        <label class="label">
+          <span class="label-text text-neutral-content">Asset denom</span>
+        </label>
+        <input
+          v-model="state.denom"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <label class="label">
+          <span class="label-text text-neutral-content">Decimals</span>
+        </label>
+        <input
+          v-model="state.decimals"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <label class="label">
+          <span class="label-text text-neutral-content">Target Utilization (%):</span>
+        </label>
+        <input
+          v-model="state.targetUtilization"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          autocomplete="off"
+        >
+        <label class="label">
+          <span class="label-text text-neutral-content">Rates (%):</span>
+        </label>
+        <input
+          v-model="state.minRate"
+          type="text"
+          class="input input-bordered mr-2 rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          placeholder="Min Rate"
+          autocomplete="off"
+        >
+        <input
+          v-model="state.optimalRate"
+          type="text"
+          class="input input-bordered mr-2 rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          placeholder="Optimal Rate"
+          autocomplete="off"
+        >
+        <input
+          v-model="state.maxRate"
+          type="text"
+          class="input input-bordered rounded-lg input-primary bg-opacity-20 text-neutral-content"
+          placeholder="Max Rate"
+          autocomplete="off"
+        >
+        <button class="btn btn-primary ml-2" @click="updateAsset">
+          Update
+        </button>
+      </div>
+    </Card>
+    <div class="w-full flex justify-center">
+      <button class="btn btn-primary mt-10" @click="logPrices">
+        Log Prices
+      </button>
     </div>
-    
   </div>
-  <button @click="logPrices">Log Prices</button>
 </template>
