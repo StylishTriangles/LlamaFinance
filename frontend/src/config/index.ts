@@ -18,3 +18,8 @@ export const modalsID = {
   COLLATERAL: "collateral_modal",
   WITHDRAW: "withdraw_modal",
 };
+
+export const contractAddresses = {
+  ORACLE_ADDRESS: "testcore1kg5u02zmej2ww6x0yctkeat8ngt2n7c9cca275z8llhxk6m2z9ese45kkx",
+  FINANCE_ADDRESS: "",
+}

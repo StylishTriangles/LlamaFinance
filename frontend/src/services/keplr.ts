@@ -113,7 +113,8 @@ export const connectKeplr = async () => {
             high: gasPrice,
           },
         });
-      } catch {
+      } catch(error: any) {
+        console.log(error);
         alert("Failed to suggest the chain");
       }
     } else
