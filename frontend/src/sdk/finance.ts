@@ -31,15 +31,23 @@ interface AssetInfo {
 }
 
 export class UserAssetInfoResponse {
+  price_per_unit: number;
+  precision: number; // Asset decimals
   collateral: number;
+  collateralUSD: number;
   borrowAmount: number;
+  borrowAmountUSD: number;
   lAssetAmount: number;
   cumulativeInterest: number;
 
-  constructor(uai: UserAssetInfo, decimals: number) {
+  constructor(uai: UserAssetInfo, decimals: number, price_per_unit: number) {
     const precision = 10 ** decimals;
+    this.price_per_unit = price_per_unit;
+    this.precision = precision;
     this.collateral = Number(uai.collateral) / precision;
+    this.collateralUSD = this.collateral * price_per_unit * precision;
     this.borrowAmount = Number(uai.borrowAmount) / precision;
+    this.borrowAmountUSD = this.borrowAmount * price_per_unit * precision;
     this.lAssetAmount = Number(uai.lAssetAmount) / precision;
     this.cumulativeInterest = Number(uai.cumulativeInterest) / 2 ** 64;
   }
@@ -210,6 +218,7 @@ export class Finance {
 
   async getUserAssetsInfo(user: string): Promise<Map<string, UserAssetInfoResponse>> {
     const assetsInfo = await this.getAssetsInfoArray();
+    const prices = await this.oracle.getPrices();
 
     const userAssetsInfo: Array<UserAssetInfo> = await this.client.queryContractSmart(
       this.contractAddress,
@@ -222,7 +231,7 @@ export class Finance {
 
     const ret = new Map<string, UserAssetInfoResponse>();
     for (let i = 0; i < assetsInfo.length; i++)
-      ret.set(assetsInfo[i].denom, new UserAssetInfoResponse(userAssetsInfo[i], assetsInfo[i].assetConfig.decimals));
+      ret.set(assetsInfo[i].denom, new UserAssetInfoResponse(userAssetsInfo[i], assetsInfo[i].assetConfig.decimals, prices[assetsInfo[i].denom].price));
 
     return ret;
   }
