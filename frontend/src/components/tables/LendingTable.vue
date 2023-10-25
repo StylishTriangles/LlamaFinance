@@ -27,6 +27,7 @@ const columns = [
 ] as TableColumn[];
 
 const tableData = ref([] as any[]);
+const isLoading = ref(true);
 
 onBeforeMount(async () => {
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
@@ -46,6 +47,7 @@ onBeforeMount(async () => {
   }
 
   tableData.value = data;
+  isLoading.value = false;
 });
 
 function onDeposit(asset: BasicAsset) {
@@ -58,6 +60,7 @@ function onDeposit(asset: BasicAsset) {
     <BaseTable
       :columns="columns"
       :data="tableData"
+      :is-loading="isLoading"
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
@@ -82,7 +85,10 @@ function onDeposit(asset: BasicAsset) {
         </div>
       </template>
       <template #action="row">
-        <button class="btn btn-primary float-right text-xs" :onclick="() => onDeposit(row.asset)">
+        <button
+          class="btn btn-primary float-right text-xs"
+          :onclick="() => onDeposit(row.asset)"
+        >
           Deposit
         </button>
       </template>

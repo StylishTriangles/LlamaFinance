@@ -59,7 +59,8 @@ defineProps({
             :colspan="columns.length"
             class="px-2 py-4 font-normal opacity-80 text-lg text-center lg:text-xl"
           >
-            {{ noDataMessage }}
+            <span v-if="isLoading" class="loading loading-bars loading-lg" />
+            <span v-else>{{ noDataMessage }}</span>
           </th>
         </tr>
       </tbody>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
@@ -14,6 +15,7 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
+  isLoading: false,
   maxBalance: props.asset.balance,
   depositedBalance: 0,
 });
@@ -38,14 +40,21 @@ function onInputChange(value: string) {
 }
 
 async function onSubmit() {
-  if (state.error)
+  if (state.error || state.isLoading)
     return;
 
-  const res = await accountStore.financeSDK!.deposit(
-    props.asset.denom,
-    Number(state.assetAmount) * props.asset.precision,
-  );
-  console.log(res);
+  state.isLoading = true;
+  try {
+    const res = await accountStore.financeSDK!.deposit(
+      props.asset.denom,
+      Number(state.assetAmount) * props.asset.precision,
+    );
+
+    emitter.emit("txn-success", res.transactionHash);
+  } catch (e) {
+    console.error(e);
+  }
+  state.isLoading = false;
 
   // const dialog = document.getElementById(modalsID.DEPOSIT);
   // (dialog as any).close();
@@ -56,6 +65,7 @@ async function onSubmit() {
   <BaseModal
     :id="modalsID.DEPOSIT"
     :title="`Deposit ${asset.name}`"
+    :is-loading="state.isLoading"
     @submit="onSubmit"
   >
     <NumberInput

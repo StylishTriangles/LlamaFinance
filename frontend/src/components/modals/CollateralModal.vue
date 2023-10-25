@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
+import { emitter } from "~/main";
+import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
-    type: Object,
+    type: Object as PropType<BasicAsset>,
     required: true,
   },
 });
@@ -13,7 +15,8 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  maxBalance: 9999,
+  isLoading: false,
+  maxBalance: props.asset.balance,
   colSoFar: 0,
   liqMargin: 20.1,
   ltv: 2.1,
@@ -28,13 +31,10 @@ const newLiqMargin = computed(() =>
 const newLTV = computed(() =>
   3.24, // TODO
 );
-const interestAPY = computed(() =>
-  15.24, // TODO
-);
 
 function onInputChange(value: string) {
   state.assetAmount = value;
-  state.assetUsdValue = Number(value) * 0.7;
+  state.assetUsdValue = Number(value) * props.asset.price;
 
   state.error = validateInput(
     value,
@@ -44,13 +44,25 @@ function onInputChange(value: string) {
   );
 }
 
-function onSubmit() {
-  if (state.error)
+async function onSubmit() {
+  if (state.error || state.isLoading)
     return;
 
-  console.log("Submit");
-  const dialog = document.getElementById(modalsID.COLLATERAL);
-  (dialog as any).close();
+  state.isLoading = true;
+  try {
+    const res = await accountStore.financeSDK!.depositCollateral(
+      props.asset.denom,
+      Number(state.assetAmount) * props.asset.precision,
+    );
+
+    emitter.emit("txn-success", res.transactionHash);
+  } catch (e) {
+    console.error(e);
+  }
+  state.isLoading = false;
+
+  // const dialog = document.getElementById(modalsID.COLLATERAL);
+  // (dialog as any).close();
 }
 </script>
 
@@ -58,6 +70,7 @@ function onSubmit() {
   <BaseModal
     :id="modalsID.COLLATERAL"
     :title="`Collateralize ${asset.name}`"
+    :is-loading="state.isLoading"
     @submit="onSubmit"
   >
     <NumberInput
@@ -110,14 +123,6 @@ function onSubmit() {
           </span>
         </template>
       </div>
-    </div>
-    <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Interest APY
-      </span>
-      <span class="font-medium">
-        {{ formatPctValue(interestAPY) }}
-      </span>
     </div>
   </BaseModal>
 </template>
