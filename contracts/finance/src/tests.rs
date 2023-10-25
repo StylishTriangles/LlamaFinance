@@ -20,6 +20,7 @@ fn first() -> Result<(), String> {
     {
         let msg = InstantiateMsg {
             oracle: oracle.clone(),
+            admin: creator.clone(),
         };
         let env = mock_env();
         let info = mock_info(&creator, &[]);

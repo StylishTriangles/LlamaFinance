@@ -16,10 +16,10 @@ use crate::query::query_handler;
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> ContractResult<Response> {
-    ADMIN.save(deps.storage, &info.sender)?;
+    ADMIN.save(deps.storage, &deps.api.addr_validate(&msg.admin)?)?;
     ASSETS.save(deps.storage, &vec![])?;
     let liquidation_threshold = 70 * RATE_DENOMINATOR / 100; 
     let global_data = GlobalData {
