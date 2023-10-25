@@ -5,7 +5,7 @@ use cosmwasm_std::{
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
-use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, USER_DATA, UserData, GLOBAL_DATA, GlobalData};
+use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, USER_DATA, UserData, GLOBAL_DATA, GlobalData, RATE_DENOMINATOR, SECONDS_IN_YEAR};
 use crate::query::query_handler;
 
 #[entry_point]
@@ -117,17 +117,35 @@ fn convert_l_asset_to_asset(
     amount_l_asset.checked_multiply_ratio(total_deposit, total_l_asset).unwrap()
 }
 
+fn get_rate(asset_info: &AssetInfo) -> u32 {
+    asset_info.asset_config.optimal_rate
+}
+
+fn get_price(global_data: &GlobalData, denom: String) -> Uint128 {
+    Uint128::new(1)
+}
+
 fn update_user_data(
     deps: DepsMut,
     env: Env,
+    info: MessageInfo,
     user: Addr,
 ) -> Result<(), ContractError> {
     let now = env.block.time;
     let mut global_data = GLOBAL_DATA.load(deps.storage)?;
-    let time_elapse = now.nanos().checked_sub(global_data.last_update).ok_or(ContractError::ClockSkew {  })?;
+    let time_elapsed = now.nanos().checked_sub(global_data.last_update).ok_or(ContractError::ClockSkew {  })?;
     let assets = ASSETS.load(deps.storage)?;
     for denom in assets.iter() {
+        let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        let rate = get_rate(&asset_info);
+        let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
+        let new_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
 
+        if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, (&info.sender, &denom)) {
+            let new_borrow_amount = user_asset_info.borrow_amount.checked_multiply_ratio(new_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
+
+        }
+        
     }
     Ok(())
 }

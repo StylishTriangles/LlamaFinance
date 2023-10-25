@@ -55,3 +55,5 @@ pub const ASSET_INFO: Map<&str, AssetInfo> = Map::new("asset_info");
 pub const ASSETS: Item<Vec<String>> = Item::new("assets");
 pub const ADMIN: Item<Addr> = Item::new("admin");
 pub const GLOBAL_DATA: Item<GlobalData> = Item::new("global_data");
+pub const RATE_DENOMINATOR: u32 = 10_000;
+pub const SECONDS_IN_YEAR: u32 = 365 * 24 * 60 * 60;
