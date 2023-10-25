@@ -315,7 +315,7 @@ fn withdraw_collateral(
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
     let response = Response::new().add_message(BankMsg::Send {
-        to_address: info.sender.into(),
+        to_address: info.sender.clone().into(),
         amount: vec![
             Coin {
                 amount,
@@ -323,7 +323,22 @@ fn withdraw_collateral(
             }
         ]
     });
+    validate_ltv(deps, &info)?;
     Ok(response)
+}
+
+fn validate_ltv(
+    mut deps: DepsMut,
+    info: &MessageInfo,
+) -> ContractResult<()> {
+    let global_data = GLOBAL_DATA.load(deps.storage)?;
+    update_prices(&mut deps, &global_data)?;
+    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
+    if liquidaton_value.is_zero() {
+        Ok(())
+    } else {
+        Err(ContractError::UnsafeLTV {  })
+    }
 }
 
 fn borrow(
@@ -336,8 +351,6 @@ fn borrow(
     update(&mut deps, &env, &info.sender)?;
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-
-    // TODO: check collateralization ratio
 
     USER_ASSET_INFO.update(deps.storage, (&info.sender, &denom), |user_asset| -> ContractResult<UserAssetInfo> {
         match user_asset {
@@ -365,7 +378,7 @@ fn borrow(
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
     let response = Response::new().add_message(BankMsg::Send {
-        to_address: info.sender.into(),
+        to_address: info.sender.clone().into(),
         amount: vec![
             Coin {
                 amount,
@@ -374,6 +387,7 @@ fn borrow(
         ]
     });
 
+    validate_ltv(deps, &info)?;
     Ok(response)
 }
 
@@ -433,31 +447,45 @@ fn repay(
 fn calculate_coins_value(
     deps: &mut DepsMut,
     coins: Vec<Coin>,
-    global_data: &GlobalData,
 ) -> ContractResult<Uint128> {
     let mut value = Uint128::zero();
     for coin in coins.iter() {
-        let PriceResponse {
-            price,
-            symbol: _,
-            precision,
-        } = query_price(deps.as_ref(), global_data.oracle.clone(), coin.denom.clone())?;
-        let coin_value = coin.amount.checked_multiply_ratio(price, precision).ok().ok_or(ContractError::PriceTooHigh {  })?;
+        let asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
+        let coin_value = coin.amount.checked_multiply_ratio(asset_info.price, asset_info.price_precision).ok().ok_or(ContractError::PriceTooHigh {  })?;
         value = value.checked_add(coin_value).ok().ok_or(ContractError::PriceTooHigh {  })?;
     }
     Ok(value)
 }
 
+fn update_prices(
+    deps: &mut DepsMut,
+    global_data: &GlobalData,
+) -> ContractResult<()> {
+    let assets = ASSETS.load(deps.storage)?;
+    for denom in assets.iter() {
+        let PriceResponse {
+            price,
+            symbol: _,
+            precision,
+        } = query_price(deps.as_ref(), global_data.oracle.clone(), denom.clone())?;
+        let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+        asset_info.price = price;
+        asset_info.price_precision = precision;
+        ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
+    }
+    Ok(())
+}
+
 fn max_liquidation_value(
     deps: &mut DepsMut,
-    user: Addr,
+    user: &Addr,
     global_data: &GlobalData,
 ) -> ContractResult<Uint128> {
     let mut debt_coins = vec![];
     let mut collateral_coins = vec![];
     let assets = ASSETS.load(deps.storage)?;
     for asset in assets.iter() {
-        let user_key = (&user, asset.as_ref());
+        let user_key = (user, asset.as_ref());
         if let Ok(user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
             {
                 let amount = user_asset_info.borrow_amount;
@@ -477,8 +505,8 @@ fn max_liquidation_value(
             }
         }
     }
-    let debt_value = calculate_coins_value(deps, debt_coins, global_data)?;
-    let collateral_value = calculate_coins_value(deps, collateral_coins, global_data)?;
+    let debt_value = calculate_coins_value(deps, debt_coins)?;
+    let collateral_value = calculate_coins_value(deps, collateral_coins)?;
     let no_liquidation = Ok(Uint128::zero());
     if collateral_value.is_zero() {
         return no_liquidation;
@@ -498,16 +526,37 @@ fn liquidate(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    _denom: String,
+    denom: String,
     user_addr: String,
 ) -> ContractResult<Response> {
+    if info.funds.len() != 1 {
+        return Err(ContractError::MultiLiquidateNotSupprted{});
+    }
     update(&mut deps, &env, &info.sender)?;
     let global_data = GLOBAL_DATA.load(deps.storage)?;
+    update_prices(&mut deps, &global_data)?;
+
     let user = deps.api.addr_validate(&user_addr)?;
 
-    let _repay_value = calculate_coins_value(&mut deps, info.funds, &global_data)?;
-    let _max_payment = max_liquidation_value(&mut deps, user, &global_data)?;
-    Ok(Response::default())
+    let repay_value = calculate_coins_value(&mut deps, info.funds)?;
+    let max_payment = max_liquidation_value(&mut deps, &user, &global_data)?;
+    
+    let extra_repay_value = repay_value.saturating_sub(max_payment);
+    let final_repay_value = repay_value.checked_sub(extra_repay_value).ok().ok_or(ContractError::InvalidExtraRepayValue {  })?;
+
+    let repay_asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+    let final_repay_amount = final_repay_value.checked_multiply_ratio(repay_asset_info.price_precision, repay_asset_info.price).ok().ok_or(ContractError::InvalidPrice{})?;
+
+    let response = Response::new().add_message(BankMsg::Send {
+        to_address: info.sender.into(),
+        amount: vec![
+            Coin {
+                amount: final_repay_amount,
+                denom,
+            }
+        ]
+    });
+    Ok(response)
 }
 
 fn update_asset(
@@ -539,6 +588,7 @@ fn update_asset(
                     new_asset = true;
                     Ok(
                         AssetInfo {
+                            denom: denom.clone(),
                             apr: Uint128::zero(),
                             total_deposit: Uint128::zero(),
                             total_borrow: Uint128::zero(),
@@ -553,6 +603,8 @@ fn update_asset(
                                 optimal_rate,
                                 max_rate,
                             },
+                            price: Uint128::zero(),
+                            price_precision: Uint128::zero(),
                         }
                     )
                 }

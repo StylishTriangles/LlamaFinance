@@ -72,17 +72,17 @@ function onSubmit() {
     <hr class="my-4 opacity-50">
 
     <div class="flex mb-1 text-sm w-full justify-between">
-      <p class="opacity-80">
+      <span class="opacity-80">
         Collateral balance
-      </p>
-      <p class="font-medium">
+      </span>
+      <span class="font-medium">
         {{ formatUSDAmount(collateralBalance) }}
-      </p>
+      </span>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <p class="opacity-80">
+      <span class="opacity-80">
         Liquidation margin
-      </p>
+      </span>
       <div class="flex gap-x-2 font-medium">
         <span :class="state.liqMargin >= 0 ? 'text-success' : 'text-error'">
           {{ formatPctValue(state.liqMargin) }}
@@ -112,12 +112,12 @@ function onSubmit() {
       </div>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <p class="opacity-80">
+      <span class="opacity-80">
         Interest APY
-      </p>
-      <p class="font-medium">
+      </span>
+      <span class="font-medium">
         {{ formatPctValue(interestAPY) }}
-      </p>
+      </span>
     </div>
   </BaseModal>
 </template>

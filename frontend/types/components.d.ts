@@ -17,6 +17,7 @@ declare module 'vue' {
     CollateralTable: typeof import('./../src/components/tables/CollateralTable.vue')['default']
     DepositModal: typeof import('./../src/components/modals/DepositModal.vue')['default']
     LendingTable: typeof import('./../src/components/tables/LendingTable.vue')['default']
+    ModalsController: typeof import('./../src/components/modals/ModalsController.vue')['default']
     Navbar: typeof import('./../src/components/Navbar.vue')['default']
     NumberInput: typeof import('./../src/components/NumberInput.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

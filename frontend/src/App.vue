@@ -5,5 +5,6 @@ onBeforeMount(() => {
 </script>
 
 <template>
+  <ModalsController />
   <RouterView />
 </template>

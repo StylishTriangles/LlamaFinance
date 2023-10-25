@@ -75,8 +75,20 @@ pub enum ContractError {
     #[error("price too high")]
     PriceTooHigh {},
 
+    #[error("invalid price")]
+    InvalidPrice {},
+
     #[error("ltv too high")]
     LTVTooHigh {},
+
+    #[error("multi liquidate not supported")]
+    MultiLiquidateNotSupprted {},
+
+    #[error("invalid extra repay value")]
+    InvalidExtraRepayValue {},
+
+    #[error("unsafe ltv")]
+    UnsafeLTV {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;

@@ -45,6 +45,7 @@ pub struct AssetConfig {
 #[serde(rename_all = "camelCase")]
 pub struct AssetInfo {
     /// For FE
+    pub denom: String,
     pub apr: Uint128,
     pub total_deposit: Uint128,
     pub total_borrow: Uint128,
@@ -53,6 +54,8 @@ pub struct AssetInfo {
     pub cumulative_interest: Uint128,
     pub asset_config: AssetConfig,
     pub last_update: Timestamp,
+    pub price: Uint128,
+    pub price_precision: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

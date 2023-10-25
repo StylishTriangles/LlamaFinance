@@ -64,20 +64,20 @@ function onSubmit() {
     <hr class="my-4 opacity-50">
 
     <div class="flex mb-1 text-sm w-full justify-between">
-      <p class="opacity-80">
+      <span class="opacity-80">
         Deposit balance
-      </p>
-      <p class="font-medium">
+      </span>
+      <span class="font-medium">
         {{ formatUSDAmount(totalBalance) }}
-      </p>
+      </span>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <p class="opacity-80">
+      <span class="opacity-80">
         Interest APY
-      </p>
-      <p class="font-medium">
+      </span>
+      <span class="font-medium">
         {{ formatPctValue(interestAPY) }}
-      </p>
+      </span>
     </div>
   </BaseModal>
 </template>

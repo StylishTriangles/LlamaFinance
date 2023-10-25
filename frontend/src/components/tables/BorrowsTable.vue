@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { modalsID } from "~/config";
+// import { modalsID } from "~/config";
+import { emitter } from "~/main";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
 
 const columns = [
   {
@@ -55,16 +56,12 @@ const tableData = [
   },
 ];
 
-const assetToBorrow = ref({ name: "", decimals: 0 } as any);
-
 function onBorrow(asset: string) {
-  assetToBorrow.value = { name: asset, decimals: 6 };
-  openModal(modalsID.BORROW);
+  emitter.emit("open-borrow-modal", { name: asset, decimals: 6 });
 }
 </script>
 
 <template>
-  <BorrowModal :asset="assetToBorrow" />
   <Card title="Available to Borrow">
     <BaseTable
       :columns="columns"
