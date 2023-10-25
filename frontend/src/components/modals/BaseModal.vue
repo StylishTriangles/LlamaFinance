@@ -8,6 +8,10 @@ defineProps({
     type: String,
     required: true,
   },
+  btnText: {
+    type: String,
+    defaul: "Submit",
+  },
 });
 
 const emit = defineEmits(["submit"]);
@@ -28,7 +32,7 @@ function onSubmit() {
 
       <div class="w-full mt-10 flex justify-center">
         <button class="w-1/2 p-2 btn btn-primary" @click="onSubmit">
-          Submit
+          {{ btnText }}
         </button>
       </div>
     </div>

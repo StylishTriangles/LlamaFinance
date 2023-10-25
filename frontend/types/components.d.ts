@@ -23,6 +23,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThemeChange: typeof import('./../src/components/ThemeChange/index.vue')['default']
+    TxnSuccessModal: typeof import('./../src/components/modals/TxnSuccessModal.vue')['default']
     WalletButton: typeof import('./../src/components/WalletButton.vue')['default']
     WithdrawModal: typeof import('./../src/components/modals/WithdrawModal.vue')['default']
     YourBorrowsTable: typeof import('./../src/components/tables/YourBorrowsTable.vue')['default']
