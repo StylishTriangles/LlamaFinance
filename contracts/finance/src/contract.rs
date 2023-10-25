@@ -52,6 +52,9 @@ pub fn execute(
         ExecuteMsg::Repay {} => {
             repay(deps, env, info)
         },
+        ExecuteMsg::Liquidate { denom, amount, target } => {
+            liquidate(deps, env, info, denom, amount, target)
+        },
         ExecuteMsg::UpdateUserAssetInfo { user_addr } => {
             update_user_asset_info(deps, env, user_addr)
         },
@@ -421,6 +424,18 @@ fn repay(
     } 
 
     Ok(response)
+}
+
+fn liquidate(
+    mut deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    denom: String,
+    amount: Uint128,
+    target: String,
+) -> ContractResult<Response> {
+    update(&mut deps, &env, &info.sender)?;
+    Ok(Response::default())
 }
 
 fn update_asset(

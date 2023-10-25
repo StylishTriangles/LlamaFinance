@@ -63,9 +63,6 @@ pub enum ContractError {
     #[error("invalid min rate")]
     InvalidMinRate {},
 
-    #[error("invalid min rate")]
-    InvalidMinRate {},
-
     #[error("too many l assets")]
     TooManyLAssets {},
 }
