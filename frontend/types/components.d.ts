@@ -9,6 +9,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     AssetsTable: typeof import('./../src/components/tables/AssetsTable.vue')['default']
     BaseTable: typeof import('./../src/components/tables/BaseTable.vue')['default']
+    BorrowsTable: typeof import('./../src/components/tables/BorrowsTable.vue')['default']
+    CollateralTable: typeof import('./../src/components/tables/CollateralTable.vue')['default']
+    copy: typeof import('./../src/components/tables/LendingTable copy.vue')['default']
+    LendingTable: typeof import('./../src/components/tables/LendingTable.vue')['default']
     Navbar: typeof import('./../src/components/Navbar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

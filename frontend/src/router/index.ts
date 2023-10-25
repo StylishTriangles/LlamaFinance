@@ -13,9 +13,14 @@ export const basicRoutes = [
         component: () => import("~/views/Home.vue"),
       },
       {
-        path: "/store-test",
-        name: "StoreTest",
-        component: () => import("~/views/StoreTest.vue"),
+        path: "/deposit",
+        name: "Deposit",
+        component: () => import("~/views/Deposit.vue"),
+      },
+      {
+        path: "/loans",
+        name: "Loans",
+        component: () => import("~/views/Loans.vue"),
       },
     ],
   },
@@ -42,9 +47,8 @@ export const router = createRouter({
 
 // Injection Progress
 router.beforeEach(() => {
-  if (!NProgress.isStarted()) {
+  if (!NProgress.isStarted())
     NProgress.start();
-  }
 });
 
 router.afterEach(() => {

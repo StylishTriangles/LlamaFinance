@@ -67,11 +67,11 @@ const tableData = [
 <template>
   <div class="card bg-neutral text-neutral-content rounded-xl mt-12 lg:mt-32 shadow-2xl">
     <div class="card-body">
-      <div class="flex justify-between mb-10">
-        <h2 class="card-title text-3xl">
+      <div class="flex items-start justify-between mb-10">
+        <h2 class="card-title text-xl md:text-3xl">
           Assets
         </h2>
-        <div class="text-right text-xl font-medium">
+        <div class="text-right text-base md:text-xl font-medium">
           <p class="font-bold">
             TVL
           </p>
