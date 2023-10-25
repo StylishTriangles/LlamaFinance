@@ -67,7 +67,7 @@ fn first() -> Result<(), String> {
         let msg = ExecuteMsg::DepositCollateral {};
         let env = mock_env();
         let info = mock_info(&alice, &[
-            Coin { denom: btc.clone(), amount: Uint128::new(100)}
+            Coin { denom: btc.clone(), amount: Uint128::new(200)}
         ]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit collateral: {}", e))?;
     }
@@ -80,7 +80,6 @@ fn first() -> Result<(), String> {
         let info = mock_info(&alice, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("withdraw collateral: {}", e))?;
     }
-
 
     Ok(())
 }   

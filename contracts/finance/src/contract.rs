@@ -113,7 +113,11 @@ fn convert_asset_to_l_asset(
     amount: Uint128,
     asset_info: &AssetInfo,
 ) -> ContractResult<Uint128> {
-    amount.checked_multiply_ratio(asset_info.total_l_asset, asset_info.total_deposit).ok().ok_or(ContractError::TooManyLAssets{})
+    if asset_info.total_l_asset.is_zero() { 
+        Ok(amount)
+    } else {
+        amount.checked_multiply_ratio(asset_info.total_l_asset, asset_info.total_deposit).ok().ok_or(ContractError::TooManyLAssets{})
+    }
 }
 
 fn convert_l_asset_to_asset(

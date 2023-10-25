@@ -25,7 +25,7 @@ pub fn query_price(_deps: Deps, _oracle_addr: String, denom: String) -> Contract
     if denom.as_str().starts_with("usdc") {
         Ok(PriceResponse { symbol: denom, price: Uint128::new(1_000_000), precision: Uint128::new(1_000_000) })
     } else {
-        Ok(PriceResponse { symbol: denom, price: Uint128::new(35_000_000_000), precision: Uint128::new(1_000_000) })
+        Ok(PriceResponse { symbol: denom, price: Uint128::new(50_000_000_000), precision: Uint128::new(1_000_000) })
     }
 }
 
