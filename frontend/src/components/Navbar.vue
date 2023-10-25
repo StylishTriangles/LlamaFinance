@@ -3,7 +3,7 @@
 
 <template>
   <div
-    class="sticky mb-6 top-0 z-30 flex h-16 w-full justify-center text-base-content opacity-90 backdrop-blur transition-all duration-100"
+    class="sticky mb-6 top-0 z-30 flex h-16 w-full justify-center text-base-content backdrop-blur transition-all duration-100"
   >
     <nav class="navbar w-full">
       <div class="navbar-start">
@@ -41,13 +41,13 @@
       </div>
 
       <div class="navbar-center hidden lg:flex">
-        <ul class="menu menu-horizontal px-1 text-base font-medium">
-          <li class="bg-secondary/10 rounded-md mx-1">
+        <ul class="menu menu-horizontal px-1 text-base text-primary-content font-medium">
+          <li class="bg-secondary/20 rounded-md mx-1">
             <RouterLink to="/deposit">
               Deposit
             </RouterLink>
           </li>
-          <li class="bg-secondary/10 rounded-md mx-1">
+          <li class="bg-secondary/20 rounded-md mx-1">
             <RouterLink to="/loans">
               Loans
             </RouterLink>

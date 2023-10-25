@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
 
 const columns = [
   {
@@ -59,11 +59,7 @@ const assetToBorrow = ref({ name: "", decimals: 0 } as any);
 
 function onBorrow(asset: string) {
   assetToBorrow.value = { name: asset, decimals: 6 };
-  const dialog = document.getElementById(modalsID.BORROW);
-  if (dialog)
-    (dialog as any).showModal();
-  else
-    console.error("Modal could not be opened");
+  openModal(modalsID.BORROW);
 }
 </script>
 

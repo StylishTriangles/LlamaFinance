@@ -24,6 +24,8 @@ declare module 'vue' {
     ThemeChange: typeof import('./../src/components/ThemeChange/index.vue')['default']
     WalletButton: typeof import('./../src/components/WalletButton.vue')['default']
     WithdrawModal: typeof import('./../src/components/modals/WithdrawModal.vue')['default']
+    YourBorrowsTable: typeof import('./../src/components/tables/YourBorrowsTable.vue')['default']
+    YourCollateralsTable: typeof import('./../src/components/tables/YourCollateralsTable.vue')['default']
     YourDepositsTable: typeof import('./../src/components/tables/YourDepositsTable.vue')['default']
   }
 }
