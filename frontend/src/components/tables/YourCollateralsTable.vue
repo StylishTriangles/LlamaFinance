@@ -17,8 +17,8 @@ const columns = [
     accessor: "balance",
   },
   {
-    header: "Collateral APY",
-    accessor: "apy",
+    header: "Collateral APR",
+    accessor: "apr",
   },
   {
     header: "",
@@ -33,7 +33,7 @@ const tableData = [
     balance_usd: formatUSDAmount(8990211.88),
     amount_added: formatAssetAmount(8990211.88),
     amount_added_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
+    apr: formatPctValue(20.96),
   },
   {
     asset: "ETH",
@@ -41,7 +41,7 @@ const tableData = [
     balance_usd: formatUSDAmount(8990211.88),
     amount_added: formatAssetAmount(8990211.88),
     amount_added_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
+    apr: formatPctValue(20.96),
   },
 ];
 

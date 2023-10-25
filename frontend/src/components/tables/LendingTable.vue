@@ -13,8 +13,8 @@ const columns = [
     accessor: "balance",
   },
   {
-    header: "APY",
-    accessor: "apy",
+    header: "APR",
+    accessor: "apr",
   },
   {
     header: "Total Deposited",
@@ -40,7 +40,7 @@ onBeforeMount(async () => {
       asset: rawAssetToBasic(asset, userBalance, price),
       balance: formatAssetAmount(userBalance / asset.precision),
       balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
-      apy: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+      apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
       total_deposited: formatAssetAmount(asset.totalDeposit),
       total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
     });

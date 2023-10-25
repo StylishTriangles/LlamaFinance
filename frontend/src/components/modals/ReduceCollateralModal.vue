@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
+import { emitter } from "~/main";
+import type { BasicAsset } from "~/types";
 import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
-    type: Object,
+    type: Object as PropType<BasicAsset>,
     required: true,
   },
 });
@@ -13,6 +15,7 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
+  isLoading: false,
   maxBalance: 9999,
   colSoFar: 1000,
   liqMargin: 20.1,
@@ -28,13 +31,13 @@ const newLiqMargin = computed(() =>
 const newLTV = computed(() =>
   3.24, // TODO
 );
-const interestAPY = computed(() =>
+const interestAPR = computed(() =>
   15.24, // TODO
 );
 
 function onInputChange(value: string) {
   state.assetAmount = value;
-  state.assetUsdValue = Number(value) * 0.7;
+  state.assetUsdValue = Number(value) * props.asset.price;
 
   state.error = validateInput(
     value,
@@ -44,13 +47,25 @@ function onInputChange(value: string) {
   );
 }
 
-function onSubmit() {
-  if (state.error)
+async function onSubmit() {
+  if (state.error || state.isLoading)
     return;
 
-  console.log("Submit");
-  const dialog = document.getElementById(modalsID.REDUCE_COL);
-  (dialog as any).close();
+  state.isLoading = true;
+  try {
+    const res = await accountStore.financeSDK!.withdrawCollateral(
+      props.asset.denom,
+      Number(state.assetAmount) * props.asset.precision,
+    );
+
+    emitter.emit("txn-success", res.transactionHash);
+  } catch (e) {
+    console.error(e);
+  }
+  state.isLoading = false;
+
+  // const dialog = document.getElementById(modalsID.REDUCE_COL);
+  // (dialog as any).close();
 }
 </script>
 
@@ -58,6 +73,7 @@ function onSubmit() {
   <BaseModal
     :id="modalsID.REDUCE_COL"
     :title="`Reduce ${asset.name} collateral`"
+    :is-loading="state.isLoading"
     @submit="onSubmit"
   >
     <NumberInput
@@ -114,10 +130,10 @@ function onSubmit() {
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
       <span class="opacity-80">
-        Interest APY
+        Interest APR
       </span>
       <span class="font-medium">
-        {{ formatPctValue(interestAPY) }}
+        {{ formatPctValue(interestAPR) }}
       </span>
     </div>
   </BaseModal>

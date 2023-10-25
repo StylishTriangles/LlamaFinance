@@ -23,7 +23,7 @@ const state = reactive({
 const totalBalance = computed(() =>
   state.depositedBalance + state.assetUsdValue,
 );
-const interestAPY = computed(() =>
+const interestAPR = computed(() =>
   15.24, // TODO
 );
 
@@ -89,10 +89,10 @@ async function onSubmit() {
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
       <span class="opacity-80">
-        Interest APY
+        Interest APR
       </span>
       <span class="font-medium">
-        {{ formatPctValue(interestAPY) }}
+        {{ formatPctValue(interestAPR) }}
       </span>
     </div>
   </BaseModal>

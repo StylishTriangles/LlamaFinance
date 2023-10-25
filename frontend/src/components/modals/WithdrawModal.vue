@@ -1,11 +1,25 @@
 <script lang="ts" setup>
 import { ExclamationIcon } from "@heroicons/vue/outline";
 import { modalsID } from "~/config";
-import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
+import { emitter } from "~/main";
+import type { BasicAsset } from "~/types";
+import { formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
-    type: Object,
+    type: Object as PropType<BasicAsset>,
+    required: true,
+  },
+  available: {
+    type: Number,
+    required: true,
+  },
+  deposited: {
+    type: Number,
+    required: true,
+  },
+  aprPct: {
+    type: String,
     required: true,
   },
 });
@@ -14,20 +28,18 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  maxBalance: 9999,
-  depositedBalance: 10,
+  isLoading: false,
+  maxBalance: props.available,
+  depositedBalance: props.deposited,
 });
 
 const balanceLeft = computed(() =>
   state.depositedBalance - state.assetUsdValue,
 );
-const interestAPY = computed(() =>
-  15.24, // TODO
-);
 
 function onInputChange(value: string) {
   state.assetAmount = value;
-  state.assetUsdValue = Number(value) * 0.7;
+  state.assetUsdValue = Number(value) * props.asset.price;
 
   state.error = validateInput(
     value,
@@ -37,13 +49,25 @@ function onInputChange(value: string) {
   );
 }
 
-function onSubmit() {
-  if (state.error)
+async function onSubmit() {
+  if (state.error || state.isLoading)
     return;
 
-  console.log("Submit");
-  const dialog = document.getElementById(modalsID.WITHDRAW);
-  (dialog as any).close();
+  state.isLoading = true;
+  try {
+    const res = await accountStore.financeSDK!.withdraw(
+      props.asset.denom,
+      Number(state.assetAmount) * props.asset.precision,
+    );
+
+    emitter.emit("txn-success", res.transactionHash);
+  } catch (e) {
+    console.error(e);
+  }
+  state.isLoading = false;
+
+  // const dialog = document.getElementById(modalsID.WITHDRAW);
+  // (dialog as any).close();
 }
 </script>
 
@@ -51,6 +75,7 @@ function onSubmit() {
   <BaseModal
     :id="modalsID.WITHDRAW"
     :title="`Withdraw ${asset.name}`"
+    :is-loading="state.isLoading"
     @submit="onSubmit"
   >
     <NumberInput
@@ -77,15 +102,15 @@ function onSubmit() {
     <div class="flex items-center mt-4">
       <ExclamationIcon class="text-warning w-8" />
       <p class="ml-3 pl-3 py-1 border-l border-l-warning text-xs ">
-        You will no longer earn the following APY on the amount you withdraw:
+        You will no longer earn the following APR on the amount you withdraw:
       </p>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
       <span class="opacity-80">
-        Interest APY
+        Interest APR
       </span>
       <span class="font-medium">
-        {{ formatPctValue(interestAPY) }}
+        {{ aprPct }}
       </span>
     </div>
   </BaseModal>

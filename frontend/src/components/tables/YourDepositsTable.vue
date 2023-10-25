@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { emitter } from "~/main";
-import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import type { BasicAsset, TableColumn } from "~/types";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
 
 const columns = [
   {
@@ -17,8 +17,8 @@ const columns = [
     accessor: "balance",
   },
   {
-    header: "APY",
-    accessor: "apy",
+    header: "APR",
+    accessor: "apr",
   },
   {
     header: "",
@@ -26,32 +26,45 @@ const columns = [
   },
 ] as TableColumn[];
 
-const tableData = [
-  {
-    asset: "CORE",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    amount_deposited: formatAssetAmount(8990211.88),
-    amount_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-  {
-    asset: "ETH",
-    balance: formatAssetAmount(8990211.88),
-    balance_usd: formatUSDAmount(8990211.88),
-    amount_deposited: formatAssetAmount(8990211.88),
-    amount_deposited_usd: formatUSDAmount(8990211.88),
-    apy: formatPctValue(20.96),
-  },
-];
+const tableData = ref([] as any[]);
+const totalDeposited = ref(0);
+const isLoading = ref(true);
 
-const totalDeposited = ref(843280.53); // TODO
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
+  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  const data = [];
+  let total = 0;
+  for (const asset of rawData) {
+    const userBalance = await accountStore.getUserBalance(asset.denom);
+    const price = asset.price_per_unit * asset.precision;
+    const userDeposit = rawUserData.get(asset.denom)!.lAssetAmount;
+    if (userDeposit === 0)
+      continue;
 
-function onDeposit(asset: string) {
-  emitter.emit("open-deposit-modal", { name: asset, decimals: 6 });
+    data.push({
+      asset: rawAssetToBasic(asset, userBalance, price),
+      balance: formatAssetAmount(userBalance / asset.precision),
+      balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
+      apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+      amout_deposited_raw: userDeposit,
+      amount_deposited: formatAssetAmount(userDeposit),
+      amount_deposited_usd: formatUSDAmount(userDeposit * price),
+    });
+    total += userDeposit * price;
+  }
+  tableData.value = data;
+  totalDeposited.value = total;
+
+  isLoading.value = false;
+});
+
+function onDeposit(asset: BasicAsset) {
+  emitter.emit("open-deposit-modal", asset);
 }
-function onWithdraw(asset: string) {
-  emitter.emit("open-withdraw-modal", { name: asset, decimals: 6 });
+function onWithdraw(asset: BasicAsset, available: number, totalDeposited: number, aprPct: string) {
+  console.log({ asset, available, totalDeposited });
+  emitter.emit("open-withdraw-modal", { asset, available, totalDeposited, aprPct });
 }
 </script>
 
@@ -67,12 +80,13 @@ function onWithdraw(asset: string) {
     <BaseTable
       :columns="columns"
       :data="tableData"
+      :is-loading="isLoading"
       no-data-message="No deposits yet"
     >
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
-          <img src="https://assets.pact.fi/currencies/MainNet/386192725.image" class="w-4">
-          <p>{{ row.asset }}</p>
+          <img :src="row.asset.icon" class="w-4">
+          <p>{{ row.asset.name }}</p>
         </div>
       </template>
       <template #balance="row">
@@ -93,10 +107,16 @@ function onWithdraw(asset: string) {
       </template>
       <template #action="row">
         <div class="flex justify-end gap-x-2">
-          <button class="btn btn-primary text-xs" :onclick="() => onDeposit(row.asset)">
+          <button
+            class="btn btn-primary text-xs"
+            :onclick="() => onDeposit(row.asset)"
+          >
             Deposit
           </button>
-          <button class="btn btn-primary btn-outline text-xs" :onclick="() => onWithdraw(row.asset)">
+          <button
+            class="btn btn-primary btn-outline text-xs"
+            :onclick="() => onWithdraw(row.asset, row.amout_deposited_raw, Number(row.amount_deposited_usd.slice(1)), row.apr)"
+          >
             Withdraw
           </button>
         </div>

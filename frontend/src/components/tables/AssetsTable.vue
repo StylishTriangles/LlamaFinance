@@ -17,12 +17,12 @@ const columns = [
     accessor: "total_borrowed",
   },
   {
-    header: "Deposit APY",
-    accessor: "deposit_apy",
+    header: "Deposit APR",
+    accessor: "deposit_apr",
   },
   {
-    header: "Borrow APY",
-    accessor: "borrow_apy",
+    header: "Borrow APR",
+    accessor: "borrow_apr",
   },
 ] as TableColumn[];
 
@@ -38,8 +38,8 @@ onBeforeMount(async () => {
     total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
     total_borrowed: formatAssetAmount(asset.totalBorrow),
     total_borrowed_usd: formatUSDAmount(asset.totalBorrowUSD),
-    deposit_apy: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
-    borrow_apy: formatPctValue(asset.apr),
+    deposit_apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+    borrow_apr: formatPctValue(asset.apr),
   }));
 
   tvl.value = rawData.reduce((a, b) =>
