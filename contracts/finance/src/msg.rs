@@ -61,4 +61,7 @@ pub enum QueryMsg {
         denom: String,
     },
     AssetsInfo {},
+    MaxLiquidationAmount {
+        user: String,
+    },
 }

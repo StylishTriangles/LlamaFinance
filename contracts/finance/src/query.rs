@@ -1,11 +1,12 @@
 use cosmwasm_std::{
-    Binary, Deps, Env, to_binary
+    Binary, Deps, Env, to_binary, Uint128
 };
 
 use crate::error::ContractResult;
 use crate::msg::QueryMsg;
+use crate::liquidation::max_liquidation_value;
 
-use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, UserAssetInfo, USER_DATA, UserData, AssetInfo};
+use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, UserAssetInfo, USER_DATA, UserData, AssetInfo, GLOBAL_DATA};
 
 
 pub fn query_handler(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
@@ -16,6 +17,7 @@ pub fn query_handler(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Bin
         QueryMsg::UserData { user } => to_binary(&query_user_data(deps, user)?),
         QueryMsg::AssetInfo { denom } => to_binary(&query_asset_info(deps, denom)?),
         QueryMsg::AssetsInfo {} => to_binary(&query_assets_info(deps)?),
+        QueryMsg::MaxLiquidationAmount { user} => to_binary(&query_max_liquidation_amount(deps, user)?),
     }?;
     Ok(raw)
 }
@@ -60,4 +62,10 @@ pub fn query_assets_info(deps: Deps) -> ContractResult<Vec<AssetInfo>> {
         assets_info.push(asset_info);
     }
     Ok(assets_info)
+}
+
+pub fn query_max_liquidation_amount(deps: Deps, user: String) -> ContractResult<Uint128> {
+    let sender = deps.api.addr_validate(&user)?;
+    let global_data = GLOBAL_DATA.load(deps.storage)?;
+    max_liquidation_value(deps, &sender, &global_data)
 }
