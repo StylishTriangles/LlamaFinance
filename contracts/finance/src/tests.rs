@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use cosmwasm_std::{testing::{mock_dependencies_with_balances, mock_env, mock_info}, Addr, Coin, Uint128};
 
 use crate::{msg::{InstantiateMsg, ExecuteMsg}, contract::{instantiate, execute}, state::RATE_DENOMINATOR};
@@ -14,14 +12,14 @@ fn first() -> Result<(), String> {
     let creator: String = Addr::unchecked("creator").into();
     let alice: String = Addr::unchecked("alice").into();
     let btc: String = Addr::unchecked("btc").into();
-    let usdc: String = Addr::unchecked("btc").into();
-    let alice_balances = &[
+    let usdc: String = Addr::unchecked("usdc").into();
+    let alice_balances = [
         Coin { denom: btc.clone(), amount: Uint128::new(10_000), },
     ];
     let balances = [
-        (alice.as_str(), alice_balances),
+        (alice.as_str(), alice_balances.as_slice()),
     ];
-    let mut deps = mock_dependencies_with_balances(&balances);
+    let mut deps = mock_dependencies_with_balances(balances.as_slice());
     {
         let msg = InstantiateMsg {
             oracle: oracle.clone(),
@@ -37,7 +35,7 @@ fn first() -> Result<(), String> {
     let btc_max_rate = rate(100);
     {
         let msg = ExecuteMsg::UpdateAsset { 
-            denom: btc, 
+            denom: btc.clone(), 
             decimals: 8, 
             target_utilization_rate_bps: btc_rate, 
             min_rate: btc_min_rate, 
@@ -54,7 +52,7 @@ fn first() -> Result<(), String> {
     let usdc_max_rate = rate(100);
     {
         let msg = ExecuteMsg::UpdateAsset { 
-            denom: usdc, 
+            denom: usdc.clone(), 
             decimals: 6, 
             target_utilization_rate_bps: usdc_rate, 
             min_rate: usdc_min_rate, 
@@ -69,9 +67,18 @@ fn first() -> Result<(), String> {
         let msg = ExecuteMsg::DepositCollateral {};
         let env = mock_env();
         let info = mock_info(&alice, &[
-            Coin { denom: btc.clone(), amount: Uint128::new(100)},
+            Coin { denom: btc.clone(), amount: Uint128::new(100)}
         ]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit collateral: {}", e))?;
+    }
+    {
+        let msg = ExecuteMsg::WithdrawCollateral { 
+            denom: btc.clone(), 
+            amount: Uint128::new(100), 
+        };
+        let env = mock_env();
+        let info = mock_info(&alice, &[]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("withdraw collateral: {}", e))?;
     }
 
 
