@@ -3,18 +3,11 @@
   "title": "InstantiateMsg",
   "type": "object",
   "required": [
-    "admin",
-    "keys"
+    "admin"
   ],
   "properties": {
     "admin": {
       "type": "string"
-    },
-    "keys": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
     }
   }
 }

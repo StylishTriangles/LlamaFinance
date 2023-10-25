@@ -1,5 +1,5 @@
 use cosmwasm_std::to_binary;
-use cosmwasm_std::{Deps, Uint128, QueryRequest, WasmQuery};
+use cosmwasm_std::{Deps, QueryRequest, WasmQuery};
 
 use crate::error::ContractResult;
 use oracle::msg::QueryMsg as OracleQueryMsg;

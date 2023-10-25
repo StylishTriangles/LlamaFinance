@@ -14,6 +14,9 @@ pub enum ContractError {
 
     #[error("Error (de)serializing storage")]
     StorageError,
+
+    #[error("Symbol already exists (symbol {symbol})")]
+    SymbolAlreadyExists { symbol: String },
 }
 
 /// ContractResult is Result<T, ContractError>

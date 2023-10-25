@@ -3,9 +3,9 @@ use cosmwasm_std::{
 };
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, PriceResponse};
 use crate::query::{query_price, query_prices};
-use crate::state::{PRICES, ADMIN};
+use crate::state::{ITEMS, ADMIN};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -14,9 +14,6 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, StdError> {
-    for key in msg.keys {
-        PRICES.save(deps.storage, &key, &Uint128::zero())?;
-    }
     ADMIN.save(deps.storage, &deps.api.addr_validate(&msg.admin)?)?;
     Ok(Response::default())
 }
@@ -29,18 +26,25 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::SetPrice { symbol, price } => {
+        ExecuteMsg::SetPrice { symbol, precision, price } => {
             if info.sender != ADMIN.load(deps.storage)? {
                 return Err(ContractError::Unauthorized {});
             }
-            PRICES.save(deps.storage, &symbol, &price)?;
+            ITEMS.save(deps.storage, &symbol, &PriceResponse {
+                symbol: symbol.clone(),
+                price,
+                precision,
+            })?;
             Ok(Response::default())
         }
         ExecuteMsg::AddSymbol { symbol } => {
             if info.sender != ADMIN.load(deps.storage)? {
                 return Err(ContractError::Unauthorized {});
             }
-            PRICES.save(deps.storage, &symbol, &Uint128::zero())?;
+            if ITEMS.has(deps.storage, &symbol) {
+                return Err(ContractError::SymbolAlreadyExists {symbol});
+            }
+            ITEMS.save(deps.storage, &symbol, &PriceResponse { symbol: symbol.clone(), price: Uint128::zero(), precision: Uint128::one() })?;
             Ok(Response::default())
         }
     }

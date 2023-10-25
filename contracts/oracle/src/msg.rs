@@ -5,13 +5,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub admin: String,
-    pub keys: Vec<String>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum ExecuteMsg {
-    SetPrice { symbol: String, price: Uint128 },
+    SetPrice { symbol: String, precision: Uint128, price: Uint128 },
     AddSymbol { symbol: String },
 }
 
