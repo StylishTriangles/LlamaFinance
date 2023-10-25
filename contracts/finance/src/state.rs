@@ -25,9 +25,9 @@ pub struct UserData {
 pub struct AssetConfig {
     pub target_utilization_rate_bps: u16,
     pub decimals: u16,
-    pub k0: Uint128,
-    pub k1: Uint128,
-    pub k2: Uint128,
+    pub min_rate: u32,
+    pub optimal_rate: u32,
+    pub max_rate: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

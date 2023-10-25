@@ -51,8 +51,8 @@ pub fn execute(
         ExecuteMsg::Repay {} => {
             repay(deps, env, info)
         },
-        ExecuteMsg::UpdateAsset { denom, decimals, target_utilization_rate_bps, k0, k1, k2 } => {
-            update_asset(deps, env, info, denom, decimals, target_utilization_rate_bps, k0, k1, k2)
+        ExecuteMsg::UpdateAsset { denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate } => {
+            update_asset(deps, env, info, denom, decimals, target_utilization_rate_bps, min_rate, optimal_rate, max_rate)
         }
     }
 }
@@ -387,9 +387,9 @@ fn update_asset(
     denom: String,
     target_utilization_rate_bps: u16,
     decimals: u16,
-    k0: Uint128,
-    k1: Uint128,
-    k2: Uint128,
+    min_rate: u32,
+    optimal_rate: u32,
+    max_rate: u32,
 ) -> ContractResult<Response> {
     let mut new_asset = false;
     ASSET_INFO.update(deps.storage, &denom, 
@@ -399,9 +399,9 @@ fn update_asset(
                     asset_info.asset_config = AssetConfig {
                         target_utilization_rate_bps,
                         decimals,
-                        k0,
-                        k1,
-                        k2,
+                        min_rate,
+                        optimal_rate,
+                        max_rate,
                     };
                     Ok(asset_info)
                 },
@@ -418,9 +418,9 @@ fn update_asset(
                             asset_config: AssetConfig {
                                 target_utilization_rate_bps,
                                 decimals,
-                                k0,
-                                k1,
-                                k2,
+                                min_rate,
+                                optimal_rate,
+                                max_rate,
                             },
                         }
                     )
