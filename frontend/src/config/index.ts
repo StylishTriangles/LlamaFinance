@@ -9,7 +9,7 @@ export const appConfig = {
   NEXT_PUBLIC_CHAIN_COIN_TYPE: "990",
   NEXT_PUBLIC_SITE_TITLE: "Coreum starter",
   NEXT_PUBLIC_SITE_ICON_URL: "/coreum.svg",
-  NEXT_PUBLIC_GAS_PRICE: "0.0625utoken",
+  NEXT_PUBLIC_GAS_PRICE: "0.0625utestcore",
 };
 
 export const modalsID = {
