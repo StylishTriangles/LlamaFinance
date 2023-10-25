@@ -55,9 +55,6 @@ async function onSubmit() {
     console.error(e);
   }
   state.isLoading = false;
-
-  // const dialog = document.getElementById(modalsID.DEPOSIT);
-  // (dialog as any).close();
 }
 </script>
 

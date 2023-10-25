@@ -30,6 +30,12 @@ const tableData = ref([] as any[]);
 const isLoading = ref(true);
 
 onBeforeMount(async () => {
+  assignData();
+  emitter.on("txn-success", assignData);
+});
+
+async function assignData() {
+  isLoading.value = true;
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
   const data = [];
   for (const asset of rawData) {
@@ -48,7 +54,7 @@ onBeforeMount(async () => {
 
   tableData.value = data;
   isLoading.value = false;
-});
+}
 
 function onDeposit(asset: BasicAsset) {
   emitter.emit("open-deposit-modal", asset);

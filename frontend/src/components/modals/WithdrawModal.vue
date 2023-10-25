@@ -34,7 +34,7 @@ const state = reactive({
 });
 
 const balanceLeft = computed(() =>
-  state.depositedBalance - state.assetUsdValue,
+  Math.max(state.depositedBalance - state.assetUsdValue, 0),
 );
 
 function onInputChange(value: string) {
@@ -65,9 +65,6 @@ async function onSubmit() {
     console.error(e);
   }
   state.isLoading = false;
-
-  // const dialog = document.getElementById(modalsID.WITHDRAW);
-  // (dialog as any).close();
 }
 </script>
 

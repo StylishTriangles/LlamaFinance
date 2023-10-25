@@ -63,9 +63,6 @@ async function onSubmit() {
     console.error(e);
   }
   state.isLoading = false;
-
-  // const dialog = document.getElementById(modalsID.REDUCE_COL);
-  // (dialog as any).close();
 }
 </script>
 

@@ -30,7 +30,13 @@ const tableData = ref([] as any[]);
 const totalDeposited = ref(0);
 const isLoading = ref(true);
 
-onBeforeMount(async () => {
+onBeforeMount(() => {
+  assignData();
+  emitter.on("txn-success", assignData);
+});
+
+async function assignData() {
+  isLoading.value = true;
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
   const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
   const data = [];
@@ -57,13 +63,12 @@ onBeforeMount(async () => {
   totalDeposited.value = total;
 
   isLoading.value = false;
-});
+}
 
 function onDeposit(asset: BasicAsset) {
   emitter.emit("open-deposit-modal", asset);
 }
 function onWithdraw(asset: BasicAsset, available: number, totalDeposited: number, aprPct: string) {
-  console.log({ asset, available, totalDeposited });
   emitter.emit("open-withdraw-modal", { asset, available, totalDeposited, aprPct });
 }
 </script>

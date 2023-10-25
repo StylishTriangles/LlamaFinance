@@ -60,9 +60,6 @@ async function onSubmit() {
     console.error(e);
   }
   state.isLoading = false;
-
-  // const dialog = document.getElementById(modalsID.COLLATERAL);
-  // (dialog as any).close();
 }
 </script>
 

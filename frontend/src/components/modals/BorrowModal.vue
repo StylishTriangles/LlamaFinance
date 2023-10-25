@@ -64,9 +64,6 @@ async function onSubmit() {
     console.error(e);
   }
   state.isLoading = false;
-
-  // const dialog = document.getElementById(modalsID.BORROW);
-  // (dialog as any).close();
 }
 </script>
 
