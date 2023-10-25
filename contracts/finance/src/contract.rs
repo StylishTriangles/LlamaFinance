@@ -9,7 +9,7 @@ use oracle::msg::PriceResponse;
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
-use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, GLOBAL_DATA, GlobalData, RATE_DENOMINATOR, SECONDS_IN_YEAR};
+use crate::state::{USER_ASSET_INFO, ASSETS, ASSET_INFO, ADMIN, UserAssetInfo, AssetConfig, AssetInfo, GLOBAL_DATA, GlobalData, RATE_DENOMINATOR, NANOSECONDS_IN_YEAR};
 use crate::query::query_handler;
 
 #[entry_point]
@@ -161,7 +161,7 @@ fn update(
         };
         let time_elapsed = now.nanos().checked_sub(asset_info.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
         let new_interest_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
-        let new_interest = new_interest_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
+        let new_interest = new_interest_after_year.checked_multiply_ratio(time_elapsed, NANOSECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
         let final_cumulative_rate = asset_info.cumulative_interest.saturating_add(new_interest);
 
         let user_key = (user, denom.as_ref());

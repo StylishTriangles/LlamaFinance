@@ -1,6 +1,6 @@
-use cosmwasm_std::{testing::{mock_env, mock_info, mock_dependencies}, Addr, Coin, Uint128};
+use cosmwasm_std::{testing::{mock_env, mock_info, mock_dependencies}, Addr, Coin, Uint128, Timestamp};
 
-use crate::{msg::{InstantiateMsg, ExecuteMsg}, contract::{instantiate, execute}, state::RATE_DENOMINATOR};
+use crate::{msg::{InstantiateMsg, ExecuteMsg}, contract::{instantiate, execute}, state::{RATE_DENOMINATOR, NANOSECONDS_IN_YEAR, ASSET_INFO}};
 
 fn rate(x: u32) -> u32 {
     x * RATE_DENOMINATOR / 100
@@ -96,14 +96,23 @@ fn first() -> Result<(), String> {
     {
         let msg = ExecuteMsg::Borrow { 
             denom: usdc.clone(), 
-            amount: Uint128::new(10_000), 
+            amount: Uint128::new(30_000), 
         };
         let env = mock_env();
-        let info = mock_info(&alice, &[
-            Coin { denom: usdc.clone(), amount: Uint128::new(100_000)}
-        ]);
-        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit: {}", e))?;
+        let info = mock_info(&alice, &[]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("borrow: {}", e))?;
     }
+    {
+        let msg = ExecuteMsg::UpdateUserAssetInfo { user_addr: alice.clone() };
+        let mut env = mock_env();
+        // env.block.time = Timestamp::from_nanos(env.block.time.nanos() + 
+        let info = mock_info(&alice, &[]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("update asset info: {}", e))?;
+    }
+    let asset_info = ASSET_INFO.load(deps.as_mut().storage, &usdc).map_err(|e|format!("asset info: {}", e))?;
+    println!("{}", asset_info.apr);
+    println!("{}", asset_info.total_borrow);
+    // let t0 = (mock_env().block.time.nanos() + SECONDS_IN_YEAR);
 
     Ok(())
 }   
