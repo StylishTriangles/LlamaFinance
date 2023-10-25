@@ -3,6 +3,7 @@ import { coin } from "@cosmjs/stargate";
 import type { Oracle } from "./oracle";
 
 const APR_PRECISION = 10_000;
+const MAX_LTV = 0.7;
 
 interface UserAssetInfo {
   collateral: string;
@@ -31,6 +32,7 @@ interface AssetInfo {
 }
 
 export class UserAssetInfoResponse {
+  denom: string;
   price_per_unit: number;
   precision: number; // Asset decimals
   collateral: number;
@@ -40,8 +42,9 @@ export class UserAssetInfoResponse {
   lAssetAmount: number;
   cumulativeInterest: number;
 
-  constructor(uai: UserAssetInfo, decimals: number, price_per_unit: number) {
+  constructor(uai: UserAssetInfo, denom: string, decimals: number, price_per_unit: number) {
     const precision = 10 ** decimals;
+    this.denom = denom;
     this.price_per_unit = price_per_unit;
     this.precision = precision;
     this.collateral = Number(uai.collateral) / precision;
@@ -231,7 +234,15 @@ export class Finance {
 
     const ret = new Map<string, UserAssetInfoResponse>();
     for (let i = 0; i < assetsInfo.length; i++)
-      ret.set(assetsInfo[i].denom, new UserAssetInfoResponse(userAssetsInfo[i], assetsInfo[i].assetConfig.decimals, prices[assetsInfo[i].denom].price));
+      ret.set(
+        assetsInfo[i].denom,
+        new UserAssetInfoResponse(
+          userAssetsInfo[i],
+          assetsInfo[i].denom,
+          assetsInfo[i].assetConfig.decimals,
+          prices[assetsInfo[i].denom].price
+        )
+      );
 
     return ret;
   }
@@ -256,5 +267,33 @@ export class Finance {
     const prices = await this.oracle.getPrices();
     const res: Array<AssetInfo> = await this.client.queryContractSmart(this.contractAddress, { assetsInfo: {} });
     return res.map(ai => new AssetInfoResponse(ai, prices[ai.denom].price));
+  }
+
+  getLTV(data: Map<string, UserAssetInfoResponse>) {
+    let totalCollateralUSD = 0;
+    let totalBorrowUSD = 0;
+    for (const uai of data.values()) {
+      totalCollateralUSD += uai.collateralUSD;
+      totalBorrowUSD += uai.borrowAmountUSD;
+    }
+    return totalBorrowUSD / totalCollateralUSD;
+  }
+
+  /// Positive delta means that collateral was added, negative means removed
+  getLTVafter(data: Map<string, UserAssetInfoResponse>, denom: string, delta: number) {
+    let totalCollateralUSD = 0;
+    let totalBorrowUSD = 0;
+    for (const uai of data.values()) {
+      if (uai.denom === denom)
+        totalCollateralUSD += (uai.collateral + delta) * uai.price_per_unit * uai.precision;
+      else
+        totalCollateralUSD += uai.collateralUSD;
+      totalBorrowUSD += uai.borrowAmountUSD;
+    }
+    return totalBorrowUSD / totalCollateralUSD;
+  }
+
+  getLiquidationMargin(ltv: number) {
+    return 1 - ltv / MAX_LTV;
   }
 }
