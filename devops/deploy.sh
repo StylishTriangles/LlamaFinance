@@ -1,5 +1,7 @@
 source .env.testnet
 
+./devops/build.sh
+
 RES=$(cored tx wasm store artifacts/oracle.wasm \
     --from wallet --gas auto --gas-adjustment 1.3 -y -b sync \
     --output json --log_format json --trace --log_level trace $COREUM_NODE_ARGS $COREUM_CHAIN_ID_ARGS)

@@ -26,7 +26,7 @@ export const modalsID = {
 
 export const contractAddresses = {
   ORACLE_ADDRESS: "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
-  FINANCE_ADDRESS: "testcore10dgj4nj4lpxvf4vq3s0pxst8xwwnt4v0null4jpatfw5sddwg4hqdlwlgh",
+  FINANCE_ADDRESS: "testcore10573ku9u589pzsvhvjdvz7wjucnjjf65r02x9aut0n7euqahcm2qgmx3a4",
 };
 
 export const assetsData = {
