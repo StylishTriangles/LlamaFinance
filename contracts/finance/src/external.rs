@@ -7,7 +7,7 @@ use oracle::msg::QueryMsg as OracleQueryMsg;
 use oracle::msg::PriceResponse;
 
 
-pub fn query_price(deps: Deps, oracle_addr: String, denom: String) -> ContractResult<Uint128> {
+pub fn query_price(deps: Deps, oracle_addr: String, denom: String) -> ContractResult<PriceResponse> {
     let msg = QueryRequest::Wasm(
         WasmQuery::Smart { 
             contract_addr: 
@@ -16,7 +16,7 @@ pub fn query_price(deps: Deps, oracle_addr: String, denom: String) -> ContractRe
         }
     );
     let response: PriceResponse = deps.querier.query(&msg)?;
-    Ok(response.price)
+    Ok(response)
 }
 
 pub fn query_prices(deps: Deps, oracle_addr: String) -> ContractResult<Vec<PriceResponse>> {

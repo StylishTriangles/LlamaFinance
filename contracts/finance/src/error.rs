@@ -63,8 +63,20 @@ pub enum ContractError {
     #[error("invalid min rate")]
     InvalidMinRate {},
 
+    #[error("invalid liquidation threshold")]
+    InvalidLiquidationThreshold {},
+
+    #[error("invalid debt value")]
+    InvalidDebtValue {},
+
     #[error("too many l assets")]
     TooManyLAssets {},
+
+    #[error("price too high")]
+    PriceTooHigh {},
+
+    #[error("ltv too high")]
+    LTVTooHigh {},
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
