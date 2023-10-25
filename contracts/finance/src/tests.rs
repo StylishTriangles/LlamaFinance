@@ -1,4 +1,4 @@
-use cosmwasm_std::{testing::{mock_dependencies_with_balances, mock_env, mock_info}, Addr, Coin, Uint128};
+use cosmwasm_std::{testing::{mock_env, mock_info, mock_dependencies}, Addr, Coin, Uint128};
 
 use crate::{msg::{InstantiateMsg, ExecuteMsg}, contract::{instantiate, execute}, state::RATE_DENOMINATOR};
 
@@ -13,13 +13,18 @@ fn first() -> Result<(), String> {
     let alice: String = Addr::unchecked("alice").into();
     let btc: String = Addr::unchecked("btc").into();
     let usdc: String = Addr::unchecked("usdc").into();
-    let alice_balances = [
-        Coin { denom: btc.clone(), amount: Uint128::new(10_000), },
-    ];
-    let balances = [
-        (alice.as_str(), alice_balances.as_slice()),
-    ];
-    let mut deps = mock_dependencies_with_balances(balances.as_slice());
+    // let alice_balances = [
+    //     Coin { denom: btc.clone(), amount: Uint128::new(10_000), },
+    //     Coin { denom: usdc.clone(), amount: Uint128::new(100_000), },
+    // ];
+    // let bob_balances = [
+    //     Coin { denom: btc.clone(), amount: Uint128::new(10_000), },
+    //     Coin { denom: usdc.clone(), amount: Uint128::new(100_000), },
+    // ];
+    // let balances = [
+    //     (alice.as_str(), alice_balances.as_slice()),
+    // ];
+    let mut deps = mock_dependencies();
     {
         let msg = InstantiateMsg {
             oracle: oracle.clone(),
@@ -67,18 +72,37 @@ fn first() -> Result<(), String> {
         let msg = ExecuteMsg::DepositCollateral {};
         let env = mock_env();
         let info = mock_info(&alice, &[
-            Coin { denom: btc.clone(), amount: Uint128::new(200)}
+            Coin { denom: btc.clone(), amount: Uint128::new(2)}
         ]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit collateral: {}", e))?;
     }
     {
         let msg = ExecuteMsg::WithdrawCollateral { 
             denom: btc.clone(), 
-            amount: Uint128::new(100), 
+            amount: Uint128::new(1), 
         };
         let env = mock_env();
         let info = mock_info(&alice, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("withdraw collateral: {}", e))?;
+    }
+    {
+        let msg = ExecuteMsg::Deposit {};
+        let env = mock_env();
+        let info = mock_info(&alice, &[
+            Coin { denom: usdc.clone(), amount: Uint128::new(100_000)}
+        ]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit: {}", e))?;
+    }
+    {
+        let msg = ExecuteMsg::Borrow { 
+            denom: usdc.clone(), 
+            amount: Uint128::new(10_000), 
+        };
+        let env = mock_env();
+        let info = mock_info(&alice, &[
+            Coin { denom: usdc.clone(), amount: Uint128::new(100_000)}
+        ]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("deposit: {}", e))?;
     }
 
     Ok(())
