@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
 
 const columns = [
   {
@@ -73,11 +73,7 @@ const assetToDeposit = ref({ name: "", decimals: 0 } as any);
 
 function onDeposit(asset: string) {
   assetToDeposit.value = { name: asset, decimals: 6 };
-  const dialog = document.getElementById(modalsID.DEPOSIT);
-  if (dialog)
-    (dialog as any).showModal();
-  else
-    console.error("Modal could not be opened");
+  openModal(modalsID.DEPOSIT);
 }
 </script>
 

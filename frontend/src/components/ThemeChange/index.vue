@@ -86,7 +86,7 @@ const changeTheme = (event: MouseEvent, theme: CustomTheme) => {
 <template>
   <div title="Change Theme" class="dropdown-end dropdown">
     <div tabindex="0" class="btn-ghost btn gap-1 normal-case">
-      <ColorSwatchIcon class="w-5 h-5 stroke-current" />
+      <ColorSwatchIcon class="w-5 h-5 stroke-primary-content" />
     </div>
     <div
       class="scrollbar dropdown-content rounded-t-box rounded-b-box top-px mt-16 h-[70vh] max-h-96 w-52 overflow-y-auto bg-base-200 text-base-content shadow-2xl"

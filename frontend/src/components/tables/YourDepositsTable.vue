@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { modalsID } from "~/config";
 import type { TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount } from "~/utils";
+import { formatAssetAmount, formatPctValue, formatUSDAmount, openModal } from "~/utils";
 
 const columns = [
   {
@@ -50,11 +50,7 @@ const totalDeposited = ref(843280.53); // TODO
 
 function onWithdraw(asset: string) {
   assetToWithdraw.value = { name: asset, decimals: 6 };
-  const dialog = document.getElementById(modalsID.WITHDRAW);
-  if (dialog)
-    (dialog as any).showModal();
-  else
-    console.error("Modal could not be opened");
+  openModal(modalsID.WITHDRAW);
 }
 </script>
 
