@@ -12,9 +12,8 @@ fn rate(x: u32) -> u32 {
 fn first() -> Result<(), String> {
     let oracle: String = Addr::unchecked("oracle").into();
     let creator: String = Addr::unchecked("creator").into();
-    let btc: String = Addr::unchecked("btc").into();
     let balances = &[
-
+        
     ];
     let mut deps = mock_dependencies_with_balances(balances);
     {
@@ -26,6 +25,7 @@ fn first() -> Result<(), String> {
         let info = mock_info(&creator, &[]);
         instantiate(deps.as_mut(), env, info, msg).map_err(|e|format!("instantiate: {}", e))?;
     }
+    let btc: String = Addr::unchecked("btc").into();
     let btc_rate = rate(80);
     let btc_min_rate = rate(10);
     let btc_optimal_rate = rate(50);
@@ -43,6 +43,25 @@ fn first() -> Result<(), String> {
         let info = mock_info(&creator, &[]);
         execute(deps.as_mut(), env, info, msg).map_err(|e|format!("add asset btc: {}", e))?;
     }
+    let usdc: String = Addr::unchecked("btc").into();
+    let usdc_rate = rate(80);
+    let usdc_min_rate = rate(10);
+    let usdc_optimal_rate = rate(50);
+    let usdc_max_rate = rate(100);
+    {
+        let msg = ExecuteMsg::UpdateAsset { 
+            denom: usdc, 
+            decimals: 6, 
+            target_utilization_rate_bps: usdc_rate, 
+            min_rate: usdc_min_rate, 
+            optimal_rate: usdc_optimal_rate, 
+            max_rate: usdc_max_rate, 
+        }; 
+        let env = mock_env();
+        let info = mock_info(&creator, &[]);
+        execute(deps.as_mut(), env, info, msg).map_err(|e|format!("add asset usdc: {}", e))?;
+    }
+
 
     Ok(())
 }   
