@@ -25,4 +25,5 @@ pub enum QueryMsg {
 pub struct PriceResponse {
     pub symbol: String,
     pub price: Uint128,
+    pub precision: Uint128,
 }
