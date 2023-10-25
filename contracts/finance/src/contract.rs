@@ -18,7 +18,7 @@ pub fn instantiate(
     ADMIN.save(deps.storage, &info.sender)?;
     ASSETS.save(deps.storage, &vec![])?;
     let global_data = GlobalData {
-        last_update: env.block.time.nanos(),
+        last_update: env.block.time,
         oracle: deps.api.addr_validate(&msg.oracle)?,
     };
     GLOBAL_DATA.save(deps.storage, &global_data)?;
@@ -125,28 +125,34 @@ fn get_price(global_data: &GlobalData, denom: String) -> Uint128 {
     Uint128::new(1)
 }
 
-fn update_user_data(
+fn update(
     deps: DepsMut,
     env: Env,
-    info: MessageInfo,
     user: Addr,
 ) -> Result<(), ContractError> {
     let now = env.block.time;
     let mut global_data = GLOBAL_DATA.load(deps.storage)?;
-    let time_elapsed = now.nanos().checked_sub(global_data.last_update).ok_or(ContractError::ClockSkew {  })?;
+    let time_elapsed = now.nanos().checked_sub(global_data.last_update.nanos()).ok_or(ContractError::ClockSkew {  })?;
     let assets = ASSETS.load(deps.storage)?;
     for denom in assets.iter() {
         let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
         let rate = get_rate(&asset_info);
         let cumulative_rate_after_year = asset_info.cumulative_interest.checked_multiply_ratio(rate, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidRate {  })?;
-        let new_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
+        let final_cumulative_rate = cumulative_rate_after_year.checked_multiply_ratio(time_elapsed, SECONDS_IN_YEAR).ok().ok_or(ContractError::InvalidTimeElapsed{})?;
 
-        if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, (&info.sender, &denom)) {
-            let new_borrow_amount = user_asset_info.borrow_amount.checked_multiply_ratio(new_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
-
+        let user_key = (&user, denom.as_ref());
+        if let Ok(mut user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
+            let final_borrow_amount = user_asset_info.borrow_amount.checked_multiply_ratio(final_cumulative_rate, asset_info.cumulative_interest).ok().ok_or(ContractError::InvalidCumulativeInterest{})?;
+            let total_borrow_without_user = asset_info.total_borrow.checked_sub(user_asset_info.borrow_amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
+            let final_total_borrow = total_borrow_without_user.saturating_add(total_borrow_without_user);
+            asset_info.total_borrow = final_total_borrow;
+            user_asset_info.borrow_amount = final_borrow_amount;
+            USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
         }
-        
+        asset_info.cumulative_interest = final_cumulative_rate;
+        ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
     }
+    global_data.last_update = now;
     Ok(())
 }
 

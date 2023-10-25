@@ -44,6 +44,10 @@ pub enum ContractError {
 
     #[error("invalid time elapsed")]
     InvalidTimeElapsed {},
+
+    #[error("invalid total borrow")]
+    InvalidTotalBorrow {},
+
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;
