@@ -13,6 +13,17 @@ pub struct UserAssetInfo {
     pub cumulative_interest: Uint128,
 }
 
+impl Default for UserAssetInfo {
+    fn default() -> Self {
+        UserAssetInfo {
+            collateral: Uint128::zero(),
+            borrow_amount: Uint128::zero(),
+            l_asset_amount: Uint128::zero(),
+            cumulative_interest: Uint128::from(1u128<<64),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UserData {

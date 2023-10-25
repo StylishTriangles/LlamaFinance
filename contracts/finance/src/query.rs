@@ -35,7 +35,7 @@ pub fn query_user_assets_info(deps: Deps, user: String) -> ContractResult<Vec<Us
     let assets = ASSETS.load(deps.storage)?;
     let mut user_assets_info: Vec<UserAssetInfo> = Vec::new();
     for asset in assets {
-        let user_asset_info = USER_ASSET_INFO.load(deps.storage, (&addr, &asset))?;
+        let user_asset_info = USER_ASSET_INFO.may_load(deps.storage, (&addr, &asset))?.unwrap_or_default();
         user_assets_info.push(user_asset_info);
     }
     Ok(user_assets_info)
