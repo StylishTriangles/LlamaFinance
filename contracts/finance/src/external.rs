@@ -6,7 +6,7 @@ use oracle::msg::QueryMsg as OracleQueryMsg;
 
 use oracle::msg::PriceResponse;
 
-
+#[cfg(not(test))]
 pub fn query_price(deps: Deps, oracle_addr: String, denom: String) -> ContractResult<PriceResponse> {
     let msg = QueryRequest::Wasm(
         WasmQuery::Smart { 
@@ -17,6 +17,16 @@ pub fn query_price(deps: Deps, oracle_addr: String, denom: String) -> ContractRe
     );
     let response: PriceResponse = deps.querier.query(&msg)?;
     Ok(response)
+}
+#[cfg(test)]
+pub fn query_price(_deps: Deps, _oracle_addr: String, denom: String) -> ContractResult<PriceResponse> {
+    use cosmwasm_std::Uint128;
+
+    if denom.as_str().starts_with("usdc") {
+        Ok(PriceResponse { symbol: denom, price: Uint128::new(1_000_000), precision: Uint128::new(1_000_000) })
+    } else {
+        Ok(PriceResponse { symbol: denom, price: Uint128::new(50_000_000_000), precision: Uint128::new(1_000_000) })
+    }
 }
 
 pub fn query_prices(deps: Deps, oracle_addr: String) -> ContractResult<Vec<PriceResponse>> {
