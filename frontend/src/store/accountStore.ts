@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 import { GasPrice, defaultRegistryTypes } from "@cosmjs/stargate";
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { SigningCosmWasmClient, wasmTypes } from "@cosmjs/cosmwasm-stargate";
 import type { GeneratedType } from "@cosmjs/proto-signing";
 import { Registry } from "@cosmjs/proto-signing";
 import { coreumRegistryTypes } from "../coreum/tx";
@@ -41,6 +41,7 @@ class AccountStore {
       const registryTypes: ReadonlyArray<[string, GeneratedType]> = [
         ...defaultRegistryTypes,
         ...coreumRegistryTypes,
+        ...wasmTypes,
       ];
       const registry = new Registry(registryTypes);
 

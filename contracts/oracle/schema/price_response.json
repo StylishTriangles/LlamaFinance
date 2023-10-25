@@ -3,10 +3,14 @@
   "title": "PriceResponse",
   "type": "object",
   "required": [
+    "precision",
     "price",
     "symbol"
   ],
   "properties": {
+    "precision": {
+      "$ref": "#/definitions/Uint128"
+    },
     "price": {
       "$ref": "#/definitions/Uint128"
     },

@@ -101,19 +101,22 @@ export class Finance {
     }
 
     async updateAsset(denom: string, decimals: number, target_utilization_rate_bps: number, min_rate: number, optimal_rate: number, max_rate: number) {
+        // multiply by 100 to convert percentages to BPS
+        let msg = {
+            updateAsset: {
+                denom,
+                decimals,
+                target_utilization_rate_bps: Math.floor(target_utilization_rate_bps * 100),
+                min_rate: Math.floor(min_rate * 100),
+                optimal_rate: Math.floor(optimal_rate * 100),
+                max_rate: Math.floor(max_rate * 100),
+            }
+        };
+        console.log(msg);
         return await this.client.execute(
             this.walletAddress,
             this.contractAddress,
-            {
-                updateAsset: {
-                    denom,
-                    decimals,
-                    target_utilization_rate_bps,
-                    min_rate,
-                    optimal_rate,
-                    max_rate
-                }
-            },
+            msg,
             "auto",
         );
     }

@@ -34,28 +34,30 @@ export class Oracle {
     }
 
     async addSymbol(symbol: string) {
+        let msg = {
+            addSymbol: {
+                symbol: symbol
+            }
+        };
         return await this.client.execute(
             this.walletAddress,
             this.contractAddress,
-            {
-                addSymbol: {
-                    symbol: symbol
-                }
-            },
+            msg,
             "auto"
         );
     }
 
     async setPrice(symbol: string, price: number) {
+        let msg = {
+            setPrice: {
+                symbol,
+                price: (price * DEFAULT_PRECISION).toFixed(0)
+            }
+        };
         return await this.client.execute(
             this.walletAddress,
             this.contractAddress,
-            {
-                setPrice: {
-                    symbol,
-                    price: (price * DEFAULT_PRECISION).toFixed(0)
-                }
-            },
+            msg,
             "auto"
         );
     }
