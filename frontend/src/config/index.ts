@@ -28,3 +28,18 @@ export const contractAddresses = {
   ORACLE_ADDRESS: "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
   FINANCE_ADDRESS: "testcore137cwn05jf40n8cjy7cv5l84ntv8t7dhrd66dgameqfwur4cvhf2sr46azv",
 };
+
+export const assetsData = {
+  "utestcore": {
+    name: "TESTCORE",
+    icon: "https://assets.coingecko.com/coins/images/24169/large/2b7Phdmz_400x400.png",
+  },
+  "musdt-testcore12d9e2fhlyw9khswzzrq3sakkmvrsms55n6zqff": {
+    name: "USDT",
+    icon: "https://icons.iconarchive.com/icons/cjdowner/cryptocurrency-flat/512/Tether-USDT-icon.png",
+  },
+  "sats-testcore12d9e2fhlyw9khswzzrq3sakkmvrsms55n6zqff": {
+    name: "BTC",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
+  },
+};
