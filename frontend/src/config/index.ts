@@ -10,6 +10,8 @@ export const appConfig = {
   NEXT_PUBLIC_SITE_TITLE: "Coreum starter",
   NEXT_PUBLIC_SITE_ICON_URL: "/coreum.svg",
   NEXT_PUBLIC_GAS_PRICE: "0.0625utestcore",
+
+  ADMIN: "testcore1snhqzau0mdhuqugpknac7udllhdpc462ea6ssx",
 };
 
 export const modalsID = {
