@@ -338,7 +338,7 @@ fn validate_ltv(
 ) -> ContractResult<()> {
     let global_data = GLOBAL_DATA.load(deps.storage)?;
     update_prices(&mut deps, &global_data)?;
-    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
+    let liquidaton_value = max_liquidation_value(deps.as_ref(), &info.sender, &global_data)?;
     if liquidaton_value.is_zero() {
         Ok(())
     } else {
@@ -450,7 +450,7 @@ fn repay(
 }
 
 fn calculate_coins_value(
-    deps: &mut DepsMut,
+    deps: Deps,
     coins: Vec<Coin>,
 ) -> ContractResult<Uint128> {
     let mut value = Uint128::zero();
@@ -482,7 +482,7 @@ fn update_prices(
 }
 
 fn max_liquidation_value(
-    deps: &mut DepsMut,
+    deps: Deps,
     user: &Addr,
     global_data: &GlobalData,
 ) -> ContractResult<Uint128> {
@@ -543,8 +543,8 @@ fn liquidate(
 
     let user = deps.api.addr_validate(&user_addr)?;
 
-    let repay_value = calculate_coins_value(&mut deps, info.funds)?;
-    let max_payment = max_liquidation_value(&mut deps, &user, &global_data)?;
+    let repay_value = calculate_coins_value(deps.as_ref(), info.funds)?;
+    let max_payment = max_liquidation_value(deps.as_ref(), &user, &global_data)?;
     
     let extra_repay_value = repay_value.saturating_sub(max_payment);
     let final_repay_value = repay_value.checked_sub(extra_repay_value).ok().ok_or(ContractError::InvalidExtraRepayValue {  })?;
