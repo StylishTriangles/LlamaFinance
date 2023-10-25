@@ -19,8 +19,10 @@ pub fn instantiate(
 ) -> ContractResult<Response> {
     ADMIN.save(deps.storage, &info.sender)?;
     ASSETS.save(deps.storage, &vec![])?;
+    let liquidation_threshold = 70 * RATE_DENOMINATOR / 100; 
     let global_data = GlobalData {
         oracle: deps.api.addr_validate(&msg.oracle)?,
+        liquidation_threshold,
     };
     GLOBAL_DATA.save(deps.storage, &global_data)?;
     Ok(Response::default())
