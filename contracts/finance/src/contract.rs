@@ -1,5 +1,6 @@
 use std::convert::TryInto;
 use crate::external::query_price;
+use crate::liquidation::{calculate_coins_value, max_liquidation_value};
 
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, BankMsg, Coin, Addr,
@@ -250,7 +251,7 @@ fn withdraw(
 
 
     let mut asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-    let user_addr = info.sender;
+    let user_addr = info.sender.clone();
     let asset_amount = convert_l_asset_to_asset(amount, &asset_info)?;
 
     USER_ASSET_INFO.update(
@@ -279,9 +280,16 @@ fn withdraw(
 
     ASSET_INFO.save(deps.storage, &denom, &asset_info)?;
 
-    // TODO: update asset APR
-
-    Ok(Response::default())
+    let response = Response::new().add_message(BankMsg::Send {
+        to_address: info.sender.clone().into(),
+        amount: vec![
+            Coin {
+                amount: asset_amount,
+                denom,
+            }
+        ]
+    });
+    Ok(response)
 }
 
 fn withdraw_collateral(
@@ -338,7 +346,7 @@ fn validate_ltv(
 ) -> ContractResult<()> {
     let global_data = GLOBAL_DATA.load(deps.storage)?;
     update_prices(&mut deps, &global_data)?;
-    let liquidaton_value = max_liquidation_value(&mut deps, &info.sender, &global_data)?;
+    let liquidaton_value = max_liquidation_value(deps.as_ref(), &info.sender, &global_data)?;
     if liquidaton_value.is_zero() {
         Ok(())
     } else {
@@ -449,18 +457,6 @@ fn repay(
     Ok(response)
 }
 
-fn calculate_coins_value(
-    deps: &mut DepsMut,
-    coins: Vec<Coin>,
-) -> ContractResult<Uint128> {
-    let mut value = Uint128::zero();
-    for coin in coins.iter() {
-        let asset_info = ASSET_INFO.load(deps.storage, &coin.denom)?;
-        let coin_value = coin.amount.checked_multiply_ratio(asset_info.price, asset_info.price_precision).ok().ok_or(ContractError::PriceTooHigh {  })?;
-        value = value.checked_add(coin_value).ok().ok_or(ContractError::PriceTooHigh {  })?;
-    }
-    Ok(value)
-}
 
 fn update_prices(
     deps: &mut DepsMut,
@@ -481,86 +477,65 @@ fn update_prices(
     Ok(())
 }
 
-fn max_liquidation_value(
-    deps: &mut DepsMut,
-    user: &Addr,
-    global_data: &GlobalData,
-) -> ContractResult<Uint128> {
-    let mut debt_coins = vec![];
-    let mut collateral_coins = vec![];
-    let assets = ASSETS.load(deps.storage)?;
-    for asset in assets.iter() {
-        let user_key = (user, asset.as_ref());
-        if let Ok(user_asset_info) = USER_ASSET_INFO.load(deps.storage, user_key) {
-            {
-                let amount = user_asset_info.borrow_amount;
-                let coin = Coin {
-                    denom: asset.clone(),
-                    amount,
-                };
-                debt_coins.push(coin);
-            }
-            {
-                let amount = user_asset_info.collateral;
-                let coin = Coin {
-                    denom: asset.clone(),
-                    amount,
-                };
-                collateral_coins.push(coin);
-            }
-        }
-    }
-    let debt_value = calculate_coins_value(deps, debt_coins)?;
-    let collateral_value = calculate_coins_value(deps, collateral_coins)?;
-    let no_liquidation = Ok(Uint128::zero());
-    if collateral_value.is_zero() {
-        return no_liquidation;
-    }
-    let ltv = debt_value.checked_multiply_ratio(RATE_DENOMINATOR, collateral_value).ok().ok_or(ContractError::LTVTooHigh {  })?;
-    if ltv <= Uint128::from(global_data.liquidation_threshold) {
-        return no_liquidation;
-    }
-
-    let last_safe_debt_value = collateral_value.checked_multiply_ratio(global_data.liquidation_threshold, RATE_DENOMINATOR).ok().ok_or(ContractError::InvalidLiquidationThreshold {  })?;
-    let threshold_delta = RATE_DENOMINATOR.checked_sub(global_data.liquidation_threshold).ok_or(ContractError::InvalidLiquidationThreshold {  })?;
-    let marginal_unsafe_debt_value = debt_value.checked_sub(last_safe_debt_value).ok().ok_or(ContractError::InvalidDebtValue{})?;
-    marginal_unsafe_debt_value.checked_multiply_ratio(RATE_DENOMINATOR, threshold_delta).ok().ok_or(ContractError::InvalidLiquidationThreshold {  })
-}
-
 fn liquidate(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    denom: String,
     user_addr: String,
+    denom: String,
 ) -> ContractResult<Response> {
     if info.funds.len() != 1 {
         return Err(ContractError::MultiLiquidateNotSupprted{});
     }
+    let debt_coin = info.funds[0].clone();
     update(&mut deps, &env, &info.sender)?;
     let global_data = GLOBAL_DATA.load(deps.storage)?;
     update_prices(&mut deps, &global_data)?;
 
     let user = deps.api.addr_validate(&user_addr)?;
 
-    let repay_value = calculate_coins_value(&mut deps, info.funds)?;
-    let max_payment = max_liquidation_value(&mut deps, &user, &global_data)?;
+    let repay_value = calculate_coins_value(deps.as_ref(), info.funds)?;
+    let max_payment = max_liquidation_value(deps.as_ref(), &user, &global_data)?;
     
     let extra_repay_value = repay_value.saturating_sub(max_payment);
     let final_repay_value = repay_value.checked_sub(extra_repay_value).ok().ok_or(ContractError::InvalidExtraRepayValue {  })?;
 
-    let repay_asset_info = ASSET_INFO.load(deps.storage, &denom)?;
-    let final_repay_amount = final_repay_value.checked_multiply_ratio(repay_asset_info.price_precision, repay_asset_info.price).ok().ok_or(ContractError::InvalidPrice{})?;
+    let mut withdraw_asset_info = ASSET_INFO.load(deps.storage, &denom)?;
+    let mut debt_asset_info = ASSET_INFO.load(deps.storage, &debt_coin.denom)?;
+    let final_withdraw_amount = final_repay_value.checked_multiply_ratio(withdraw_asset_info.price_precision, withdraw_asset_info.price).ok().ok_or(ContractError::InvalidPrice{})?;
+    
 
     let response = Response::new().add_message(BankMsg::Send {
         to_address: info.sender.into(),
         amount: vec![
             Coin {
-                amount: final_repay_amount,
-                denom,
+                amount: final_withdraw_amount,
+                denom: denom.clone(),
             }
         ]
     });
+    let user_key = (&user, denom.as_str());
+    let mut user_asset_info = USER_ASSET_INFO.load(deps.storage, user_key)?;
+    let user_debt_key = (&user, debt_coin.denom.as_str());
+    let mut user_debt_asset_info = USER_ASSET_INFO.load(deps.storage, user_debt_key)?;
+
+    let final_user_collateral = user_asset_info.collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
+    let final_user_debt_borrow = user_debt_asset_info.borrow_amount.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;;
+    let final_total_collateral = withdraw_asset_info.total_collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
+    let final_debt_total_borrowed = debt_asset_info.total_borrow.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
+    
+    user_debt_asset_info.borrow_amount = final_user_debt_borrow;
+    USER_ASSET_INFO.save(deps.storage, user_key, &user_debt_asset_info)?;
+    
+    user_asset_info.collateral = final_user_collateral;
+    USER_ASSET_INFO.save(deps.storage, user_key, &user_asset_info)?;
+    
+    withdraw_asset_info.total_collateral = final_total_collateral;
+    ASSET_INFO.save(deps.storage, &denom, &withdraw_asset_info)?;
+    
+    debt_asset_info.total_borrow = final_debt_total_borrowed;
+    ASSET_INFO.save(deps.storage, &debt_coin.denom, &debt_asset_info)?;
+
     Ok(response)
 }
 

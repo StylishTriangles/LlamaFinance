@@ -87,6 +87,10 @@ pub enum ContractError {
     #[error("invalid extra repay value")]
     InvalidExtraRepayValue {},
 
+
+    #[error("invalid final withdraw amount")]
+    InvalidFinalWithdrawAmount {},
+
     #[error("unsafe ltv")]
     UnsafeLTV {},
 }
