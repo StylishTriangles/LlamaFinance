@@ -33,10 +33,10 @@ pub fn max_liquidation_value(
     }
     let debt_value = calculate_coins_value(deps, debt_coins)?;
     let collateral_value = calculate_coins_value(deps, collateral_coins)?;
-    let no_liquidation = Ok(Uint128::zero());
     if collateral_value.is_zero() {
-        return no_liquidation;
+        return Ok(debt_value);
     }
+    let no_liquidation = Ok(Uint128::zero());
     let ltv = debt_value.checked_multiply_ratio(RATE_DENOMINATOR, collateral_value).ok().ok_or(ContractError::LTVTooHigh {  })?;
     if ltv <= Uint128::from(global_data.liquidation_threshold) {
         return no_liquidation;
