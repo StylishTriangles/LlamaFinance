@@ -519,9 +519,9 @@ fn liquidate(
     let user_debt_key = (&user, debt_coin.denom.as_str());
     let mut user_debt_asset_info = USER_ASSET_INFO.load(deps.storage, user_debt_key)?;
 
-    let final_user_collateral = user_asset_info.collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
-    let final_user_debt_borrow = user_debt_asset_info.borrow_amount.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;;
-    let final_total_collateral = withdraw_asset_info.total_collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;;
+    let final_user_collateral = user_asset_info.collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;
+    let final_user_debt_borrow = user_debt_asset_info.borrow_amount.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
+    let final_total_collateral = withdraw_asset_info.total_collateral.checked_sub(final_withdraw_amount).ok().ok_or(ContractError::InvalidFinalWithdrawAmount {  })?;
     let final_debt_total_borrowed = debt_asset_info.total_borrow.checked_sub(debt_coin.amount).ok().ok_or(ContractError::InvalidTotalBorrow {  })?;
     
     user_debt_asset_info.borrow_amount = final_user_debt_borrow;
