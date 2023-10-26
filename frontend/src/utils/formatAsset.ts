@@ -5,7 +5,8 @@ import type { BasicAsset } from "~/types";
 export function rawAssetToBasic(
   asset: AssetInfoResponse,
   userBalance: number,
-  price: number) {
+  price: number,
+) {
   return {
     denom: asset.denom,
     name: assetsData[asset.denom].name,

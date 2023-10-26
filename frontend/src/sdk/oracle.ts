@@ -25,7 +25,11 @@ export class Oracle {
   contractAddress: string;
   client: SigningCosmWasmClient;
 
-  constructor(client: SigningCosmWasmClient, walletAddress: string, contractAddress: string) {
+  constructor(
+    client: SigningCosmWasmClient,
+    walletAddress: string,
+    contractAddress: string,
+  ) {
     this.walletAddress = walletAddress;
     this.contractAddress = contractAddress;
     this.client = client;
@@ -87,7 +91,11 @@ export class Oracle {
 
     for (let i = 0; i < ret.length; i++) {
       const price = ret[i];
-      prices[price.symbol] = new PriceInfo(price.symbol, price.price, price.precision);
+      prices[price.symbol] = new PriceInfo(
+        price.symbol,
+        price.price,
+        price.precision,
+      );
     }
 
     return prices;

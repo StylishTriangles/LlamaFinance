@@ -36,7 +36,9 @@ onBeforeMount(() => {
 async function assignData() {
   isLoading.value = true;
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
-  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(
+    accountStore.walletAddress!,
+  );
   const data = [];
   let total = 0;
   for (const asset of rawData) {
@@ -101,10 +103,16 @@ function onReduce(asset: BasicAsset) {
     </template>
     <template #action="row">
       <div class="flex justify-end gap-x-2">
-        <button class="btn btn-primary text-xs" :onclick="() => onCollateralize(row.asset)">
+        <button
+          class="btn btn-primary text-xs"
+          :onclick="() => onCollateralize(row.asset)"
+        >
           Collateralize
         </button>
-        <button class="btn btn-primary btn-outline text-xs" :onclick="() => onReduce(row.asset)">
+        <button
+          class="btn btn-primary btn-outline text-xs"
+          :onclick="() => onReduce(row.asset)"
+        >
           Reduce
         </button>
       </div>

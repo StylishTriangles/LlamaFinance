@@ -44,7 +44,10 @@ function onSubmit() {
 
     <!-- A trick that's closing the dialog when clicked outside of it -->
     <form method="dialog" class="modal-backdrop opacity-100">
-      <button class="outline-none cursor-default" :style="{ background: 'transparent' }">
+      <button
+        class="outline-none cursor-default"
+        :style="{ background: 'transparent' }"
+      >
         close
       </button>
     </form>

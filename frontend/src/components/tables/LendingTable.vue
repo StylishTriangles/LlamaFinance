@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import { emitter } from "~/main";
 import type { BasicAsset, TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
+import {
+  formatAssetAmount,
+  formatPctValue,
+  formatUSDAmount,
+  rawAssetToBasic,
+} from "~/utils";
 
 const columns = [
   {
@@ -46,7 +51,9 @@ async function assignData() {
       asset: rawAssetToBasic(asset, userBalance, price),
       balance: formatAssetAmount(userBalance / asset.precision),
       balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
-      apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+      apr: formatPctValue(
+        (asset.apr * asset.totalBorrow) / (asset.totalDeposit || 1),
+      ),
       total_deposited: formatAssetAmount(asset.totalDeposit),
       total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
     });
@@ -63,11 +70,7 @@ function onDeposit(asset: BasicAsset) {
 
 <template>
   <Card title="Lending">
-    <BaseTable
-      :columns="columns"
-      :data="tableData"
-      :is-loading="isLoading"
-    >
+    <BaseTable :columns="columns" :data="tableData" :is-loading="isLoading">
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
           <img :src="row.asset.icon" class="w-4">

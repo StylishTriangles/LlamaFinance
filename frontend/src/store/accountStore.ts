@@ -65,7 +65,11 @@ class AccountStore {
         this.signingClient,
         this.walletAddress,
         contractAddresses.FINANCE_ADDRESS,
-        new Oracle(this.signingClient, this.walletAddress, contractAddresses.ORACLE_ADDRESS),
+        new Oracle(
+          this.signingClient,
+          this.walletAddress,
+          contractAddresses.ORACLE_ADDRESS,
+        ),
       );
 
       this.loading = false;
@@ -80,11 +84,13 @@ class AccountStore {
   async getUserBalance(tokenName: string) {
     if (!this.signingClient || !this.walletAddress)
       return 0;
-    const balanceInfo = await this.signingClient.getBalance(this.walletAddress, tokenName);
+    const balanceInfo = await this.signingClient.getBalance(
+      this.walletAddress,
+      tokenName,
+    );
     if (balanceInfo)
       return Number(balanceInfo.amount);
-    else
-      return 0;
+    else return 0;
   }
 
   disconnect() {

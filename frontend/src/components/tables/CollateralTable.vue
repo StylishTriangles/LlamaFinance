@@ -52,11 +52,7 @@ function onCollateralize(asset: BasicAsset) {
 
 <template>
   <Card title="Available to Collateralize">
-    <BaseTable
-      :columns="columns"
-      :data="tableData"
-      :is-loading="isLoading"
-    >
+    <BaseTable :columns="columns" :data="tableData" :is-loading="isLoading">
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
           <img :src="row.asset.icon" class="w-4">
@@ -80,5 +76,5 @@ function onCollateralize(asset: BasicAsset) {
         </button>
       </template>
     </BaseTable>
-  </card>
+  </Card>
 </template>

@@ -26,30 +26,46 @@ const state = reactive({
 const rawUserData = ref(null as null | Map<string, UserAssetInfoResponse>);
 
 onBeforeMount(async () => {
-  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
-  state.borrowedSoFar = rawUserData.value.get(props.asset.denom)!.borrowAmountUSD;
-  state.maxBalance = Number((Number(accountStore.financeSDK!.getMaxLoanAmount(rawUserData.value, props.asset.denom).toFixed(props.asset.decimals)) - (1 * 10 ** (-1 * props.asset.decimals))).toFixed(props.asset.decimals));
+  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(
+    accountStore.walletAddress!,
+  );
+  state.borrowedSoFar = rawUserData.value.get(
+    props.asset.denom,
+  )!.borrowAmountUSD;
+  state.maxBalance = Number(
+    (
+      Number(
+        accountStore
+          .financeSDK!.getMaxLoanAmount(rawUserData.value, props.asset.denom)
+          .toFixed(props.asset.decimals),
+      )
+      - 1 * 10 ** (-1 * props.asset.decimals)
+    ).toFixed(props.asset.decimals),
+  );
   state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
-  state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
+  state.liqMargin
+    = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
   state.isLoading = false;
 });
 
-const totalBorrow = computed(() =>
-  state.borrowedSoFar + state.assetUsdValue,
-);
+const totalBorrow = computed(() => state.borrowedSoFar + state.assetUsdValue);
 const newLTV = computed(() => {
   if (!rawUserData.value)
     return 0;
-  return accountStore.financeSDK!.getLTVafter(
-    rawUserData.value,
-    props.asset.denom,
-    Number(state.assetAmount) * -1,
-  ) * 100;
+  return (
+    accountStore.financeSDK!.getLTVafter(
+      rawUserData.value,
+      props.asset.denom,
+      Number(state.assetAmount) * -1,
+    ) * 100
+  );
 });
 const newLiqMargin = computed(() => {
   if (!rawUserData.value)
     return 0;
-  return accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100;
+  return (
+    accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100
+  );
 });
 
 function onInputChange(value: string) {
@@ -102,17 +118,13 @@ async function onSubmit() {
     <hr class="my-4 opacity-50">
 
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Total borrow
-      </span>
+      <span class="opacity-80"> Total borrow </span>
       <span class="font-medium">
         {{ formatUSDAmount(totalBorrow) }}
       </span>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Liquidation margin
-      </span>
+      <span class="opacity-80"> Liquidation margin </span>
       <div class="flex gap-x-2 font-medium">
         <span :class="state.liqMargin >= 0 ? 'text-success' : 'text-error'">
           {{ formatPctValue(state.liqMargin) }}
@@ -126,9 +138,7 @@ async function onSubmit() {
       </div>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        LTV
-      </span>
+      <span class="opacity-80"> LTV </span>
       <div class="flex gap-x-2 font-medium">
         <span>
           {{ formatPctValue(state.ltv) }}

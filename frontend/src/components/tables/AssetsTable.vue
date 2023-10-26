@@ -38,12 +38,16 @@ onBeforeMount(async () => {
     total_deposited_usd: formatUSDAmount(asset.totalDepositUSD),
     total_borrowed: formatAssetAmount(asset.totalBorrow),
     total_borrowed_usd: formatUSDAmount(asset.totalBorrowUSD),
-    deposit_apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+    deposit_apr: formatPctValue(
+      (asset.apr * asset.totalBorrow) / (asset.totalDeposit || 1),
+    ),
     borrow_apr: formatPctValue(asset.apr),
   }));
 
-  tvl.value = rawData.reduce((a, b) =>
-    a + b.totalCollateralUSD + b.totalDepositUSD, 0);
+  tvl.value = rawData.reduce(
+    (a, b) => a + b.totalCollateralUSD + b.totalDepositUSD,
+    0,
+  );
   isLoading.value = false;
 });
 </script>
@@ -56,11 +60,7 @@ onBeforeMount(async () => {
       </p>
       <p>{{ formatUSDAmount(tvl) }}</p>
     </template>
-    <BaseTable
-      :columns="columns"
-      :data="tableData"
-      :is-loading="isLoading"
-    >
+    <BaseTable :columns="columns" :data="tableData" :is-loading="isLoading">
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
           <img :src="assetsData[row.asset].icon" class="w-4">

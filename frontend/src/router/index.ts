@@ -26,7 +26,7 @@ export const basicRoutes = [
         path: "/admin",
         name: "Admin",
         component: () => import("~/views/Admin.vue"),
-      }
+      },
     ],
   },
   // Always leave this as last one
