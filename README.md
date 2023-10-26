@@ -1,3 +1,7 @@
+[![Rust](https://img.shields.io/badge/Rust-%E28093-DEA584.svg)](https://www.rust-lang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-%E28093-007ACC.svg)](https://www.typescriptlang.org/)
+[![Vue.js](https://img.shields.io/badge/Vue.js-%E28093-4FC08D.svg)](https://vuejs.org/)
+
 # 🦙 LlamaFinance
 
 LlamaFinance is a cutting-edge decentralized finance (DeFi) lending protocol developed during a hackathon on the Coreum blockchain. Coreum is a 3rd-generation layer-1 enterprise-grade blockchain designed to serve as a core infrastructure for decentralized applications. It offers advanced features such as ISO20022 compatibility, IBC interoperability, and novel Smart Tokens.
