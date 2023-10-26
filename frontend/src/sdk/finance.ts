@@ -4,6 +4,7 @@ import type { Oracle } from "./oracle";
 
 const APR_PRECISION = 10_000;
 const MAX_LTV = 0.7;
+const MAINTANANCE_MARGIN = 0.1;
 
 interface UserAssetInfo {
   collateral: string;
@@ -312,7 +313,7 @@ export class Finance {
     }
 
     const ltv = totalBorrowUSD / totalCollateralUSD;
-    const liquidationMargin = this.getLiquidationMargin(ltv);
+    const liquidationMargin = this.getLiquidationMargin(ltv) - MAINTANANCE_MARGIN;
     const maxLoanAmountUSD = totalCollateralUSD * liquidationMargin;
     return maxLoanAmountUSD / ai.price_per_unit / ai.precision;
   }
