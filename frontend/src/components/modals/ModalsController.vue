@@ -1,24 +1,15 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
-import type { BasicAsset, WithdrawData } from "~/types";
+import type { BasicAsset } from "~/types";
 
 const initialModalsData = {
   assetToDeposit: null as BasicAsset | null,
-
   assetToWithdraw: null as BasicAsset | null,
-  availableToWithdraw: null as number | null,
-  totalDeposited: null as number | null,
-  aprPct: null as string | null,
-
   assetToBorrow: null as BasicAsset | null,
-
   assetToRepay: null as BasicAsset | null,
-
   assetToCollateralize: null as BasicAsset | null,
-
   assetToReduceCollateral: null as BasicAsset | null,
-
   txnHash: null as string | null,
 };
 
@@ -39,12 +30,9 @@ function openDepositModal(asset: BasicAsset) {
   state.assetToDeposit = asset;
   openModal(modalsID.DEPOSIT);
 }
-function openWithdrawModal(data: WithdrawData) {
+function openWithdrawModal(asset: BasicAsset) {
   closeModals();
-  state.assetToWithdraw = data.asset;
-  state.availableToWithdraw = data.available;
-  state.totalDeposited = data.totalDeposited;
-  state.aprPct = data.aprPct;
+  state.assetToWithdraw = asset;
   openModal(modalsID.WITHDRAW);
 }
 function openBorrowModal(asset: BasicAsset) {
@@ -116,9 +104,6 @@ function closeModals() {
       v-if="state.assetToWithdraw"
       :key="state.assetToWithdraw.denom"
       :asset="state.assetToWithdraw"
-      :available="state.availableToWithdraw!"
-      :deposited="state.totalDeposited!"
-      :apr-pct="state.aprPct!"
     />
     <TxnSuccessModal
       v-if="state.txnHash"

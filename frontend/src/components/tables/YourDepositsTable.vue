@@ -53,7 +53,6 @@ async function assignData() {
       balance: formatAssetAmount(userBalance / asset.precision),
       balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
       apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
-      amout_deposited_raw: userDeposit,
       amount_deposited: formatAssetAmount(userDeposit),
       amount_deposited_usd: formatUSDAmount(userDeposit * price),
     });
@@ -68,8 +67,8 @@ async function assignData() {
 function onDeposit(asset: BasicAsset) {
   emitter.emit("open-deposit-modal", asset);
 }
-function onWithdraw(asset: BasicAsset, available: number, totalDeposited: number, aprPct: string) {
-  emitter.emit("open-withdraw-modal", { asset, available, totalDeposited, aprPct });
+function onWithdraw(asset: BasicAsset) {
+  emitter.emit("open-withdraw-modal", asset);
 }
 </script>
 
@@ -120,7 +119,7 @@ function onWithdraw(asset: BasicAsset, available: number, totalDeposited: number
           </button>
           <button
             class="btn btn-primary btn-outline text-xs"
-            :onclick="() => onWithdraw(row.asset, row.amout_deposited_raw, Number(row.amount_deposited_usd.slice(1)), row.apr)"
+            :onclick="() => onWithdraw(row.asset)"
           >
             Withdraw
           </button>

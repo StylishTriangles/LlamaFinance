@@ -3,23 +3,11 @@ import { ExclamationIcon } from "@heroicons/vue/outline";
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
 import type { BasicAsset } from "~/types";
-import { formatUSDAmount, validateInput } from "~/utils";
+import { formatPctValue, formatUSDAmount, validateInput } from "~/utils";
 
 const props = defineProps({
   asset: {
     type: Object as PropType<BasicAsset>,
-    required: true,
-  },
-  available: {
-    type: Number,
-    required: true,
-  },
-  deposited: {
-    type: Number,
-    required: true,
-  },
-  aprPct: {
-    type: String,
     required: true,
   },
 });
@@ -29,13 +17,23 @@ const state = reactive({
   assetUsdValue: 0,
   error: "",
   isLoading: false,
-  maxBalance: props.available,
-  depositedBalance: props.deposited,
+  maxBalance: 0,
+  depositedBalance: 0,
+  apr: 0,
 });
 
 const balanceLeft = computed(() =>
   Math.max(state.depositedBalance - state.assetUsdValue, 0),
 );
+
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfo();
+  const assetData = rawData.get(props.asset.denom)!;
+  state.maxBalance = assetData.totalDeposit;
+  state.depositedBalance = assetData.totalDepositUSD;
+  state.apr = assetData.apr * assetData.totalBorrow / (assetData.totalDeposit || 1);
+  state.isLoading = false;
+});
 
 function onInputChange(value: string) {
   state.assetAmount = value;
@@ -107,7 +105,7 @@ async function onSubmit() {
         Interest APR
       </span>
       <span class="font-medium">
-        {{ aprPct }}
+        {{ formatPctValue(state.apr) }}
       </span>
     </div>
   </BaseModal>
