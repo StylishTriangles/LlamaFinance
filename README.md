@@ -1,6 +1,9 @@
 # 🦙 LlamaFinance
+[🌐 Website](https://llama-finance.vercel.app/) 
 
 LlamaFinance is a cutting-edge decentralized finance (DeFi) lending protocol developed during a hackathon on the Coreum blockchain. Coreum is a 3rd-generation layer-1 enterprise-grade blockchain designed to serve as a core infrastructure for decentralized applications. It offers advanced features such as ISO20022 compatibility, IBC interoperability, and novel Smart Tokens.
+
+![coreum](images/coreum.png)
 
 Coreum ensures high throughput, cost-effective fees, and outstanding scalability. It leverages WASM-based smart contracts for diverse use cases and operates on a low-latency, PoS network, facilitating rapid, secure, and modular applications. $CORE serves as the native token for Coreum, enabling interactions with various blockchain features.
 
@@ -64,6 +67,6 @@ This project is licensed under the MIT License. You're welcome to fork and custo
 **🚧 Disclaimer**: LlamaFinance emerged from a hackathon. Nevertheless, please exercise due diligence and conduct thorough research before engaging with the platform. DeFi investments carry inherent risks, and it's essential to be cautious.
 
 
-[🌐 Website](https://llama-finance.vercel.app/) 
-
 If you have any questions or need support, please contact us through GitHub issues.
+
+![img](images/llama-finance.png)
