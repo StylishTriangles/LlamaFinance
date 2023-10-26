@@ -16,7 +16,11 @@ const state = reactive({
 
 async function addAsset() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
+    const oracle = new Oracle(
+      accountStore.signingClient,
+      accountStore.walletAddress,
+      contractAddresses.ORACLE_ADDRESS,
+    );
     const res2 = await oracle.addSymbol(state.denom);
     console.log(res2);
   }
@@ -24,15 +28,32 @@ async function addAsset() {
 
 async function setPrice() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
-    const res2 = await oracle.setPrice(state.denom, Number(state.price), Number(state.precision));
+    const oracle = new Oracle(
+      accountStore.signingClient,
+      accountStore.walletAddress,
+      contractAddresses.ORACLE_ADDRESS,
+    );
+    const res2 = await oracle.setPrice(
+      state.denom,
+      Number(state.price),
+      Number(state.precision),
+    );
     console.log(res2);
   }
 }
 
 async function updateAsset() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    const finance = new Finance(accountStore.signingClient, accountStore.walletAddress, contractAddresses.FINANCE_ADDRESS);
+    const finance = new Finance(
+      accountStore.signingClient,
+      accountStore.walletAddress,
+      contractAddresses.FINANCE_ADDRESS,
+      new Oracle(
+        accountStore.signingClient,
+        accountStore.walletAddress,
+        contractAddresses.ORACLE_ADDRESS,
+      ),
+    );
     const res2 = await finance.updateAsset(
       state.denom,
       Number(state.decimals),
@@ -47,7 +68,11 @@ async function updateAsset() {
 
 async function logPrices() {
   if (accountStore.walletAddress && accountStore.signingClient) {
-    const oracle = new Oracle(accountStore.signingClient, accountStore.walletAddress, contractAddresses.ORACLE_ADDRESS);
+    const oracle = new Oracle(
+      accountStore.signingClient,
+      accountStore.walletAddress,
+      contractAddresses.ORACLE_ADDRESS,
+    );
     const res = await oracle.getPrices();
     console.log(res);
   }
@@ -75,7 +100,7 @@ async function logPrices() {
         </button>
       </div>
 
-      <p class="text-xl" style="margin-left: 10px;">
+      <p class="text-xl" style="margin-left: 10px">
         Set Price
       </p>
       <div class="ml-10 flex-col">
@@ -114,7 +139,7 @@ async function logPrices() {
     </Card>
 
     <Card title="Finance">
-      <p class="text-xl" style="margin-left: 10px;">
+      <p class="text-xl" style="margin-left: 10px">
         Update Asset
       </p>
       <div class="ml-10 flex-col">

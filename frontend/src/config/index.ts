@@ -2,8 +2,10 @@ export const appConfig = {
   NEXT_PUBLIC_CHAIN_ID: "coreum-testnet-1",
   NEXT_PUBLIC_CHAIN_NAME: "Coreum Testnet",
   NEXT_PUBLIC_CHAIN_BECH32_PREFIX: "testcore",
-  NEXT_PUBLIC_CHAIN_RPC_ENDPOINT: "https://full-node.testnet-1.coreum.dev:26657/",
-  NEXT_PUBLIC_CHAIN_REST_ENDPOINT: "https://full-node.testnet-1.coreum.dev:1317/",
+  NEXT_PUBLIC_CHAIN_RPC_ENDPOINT:
+    "https://full-node.testnet-1.coreum.dev:26657/",
+  NEXT_PUBLIC_CHAIN_REST_ENDPOINT:
+    "https://full-node.testnet-1.coreum.dev:1317/",
   NEXT_PUBLIC_CHAIN_EXPLORER: "https://explorer.testnet-1.coreum.dev/",
   NEXT_PUBLIC_STAKING_DENOM: "utestcore",
   NEXT_PUBLIC_CHAIN_COIN_TYPE: "990",
@@ -25,8 +27,10 @@ export const modalsID = {
 };
 
 export const contractAddresses = {
-  ORACLE_ADDRESS: "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
-  FINANCE_ADDRESS: "testcore1hg08dzjzladaqcqs25vdjsz2ksvfyzpmw0t4yzff245pmny97zssartjxv",
+  ORACLE_ADDRESS:
+    "testcore1g8m5knlt3ydkhcef9wpufe46u3h0jncywr420n6pcg8fqzma396sdhw532",
+  FINANCE_ADDRESS:
+    "testcore1hg08dzjzladaqcqs25vdjsz2ksvfyzpmw0t4yzff245pmny97zssartjxv",
 };
 
 interface AssetData {

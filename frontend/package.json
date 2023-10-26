@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "prettier:fix": "prettier --write 'src/**/*.{js,ts,vue,json}'",
     "test": "vitest",
     "test:unit": "vitest",
     "test:coverage": "vitest run --coverage",

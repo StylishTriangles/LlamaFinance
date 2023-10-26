@@ -17,8 +17,7 @@ export function validateInput(
   )
     if (decimalPoints)
       return `${assetName} has ${decimalPoints} decimal points`;
-    else
-      return `${assetName} does not have decimal points`;
+    else return `${assetName} does not have decimal points`;
 
   return "";
 }

@@ -11,9 +11,25 @@ import logo from "~/assets/logo.png";
       <div class="navbar-start">
         <div class="dropdown dropdown-hover">
           <label tabindex="0" class="btn btn-ghost lg:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
+            </svg>
           </label>
-          <ul tabindex="0" class="menu menu-sm dropdown-content z-[1] p-2 shadow bg-accent text-accent-content rounded-box w-52">
+          <ul
+            tabindex="0"
+            class="menu menu-sm dropdown-content z-[1] p-2 shadow bg-accent text-accent-content rounded-box w-52"
+          >
             <li>
               <RouterLink to="/deposit">
                 Deposit
@@ -43,7 +59,9 @@ import logo from "~/assets/logo.png";
       </div>
 
       <div class="navbar-center hidden lg:flex">
-        <ul class="menu menu-horizontal px-1 text-base text-primary-content font-medium">
+        <ul
+          class="menu menu-horizontal px-1 text-base text-primary-content font-medium"
+        >
           <li class="bg-secondary/20 rounded-md mx-1">
             <RouterLink to="/deposit">
               Deposit
@@ -54,7 +72,10 @@ import logo from "~/assets/logo.png";
               Loans
             </RouterLink>
           </li>
-          <li v-if="accountStore.walletAddress === appConfig.ADMIN" class="bg-secondary/10 rounded-md mx-1">
+          <li
+            v-if="accountStore.walletAddress === appConfig.ADMIN"
+            class="bg-secondary/10 rounded-md mx-1"
+          >
             <RouterLink to="/admin">
               Admin
             </RouterLink>

@@ -82,16 +82,21 @@ function onInput() {
         :style="{ top: '50%', transform: 'translateY(-50%)' }"
       >
         <img :src="asset.icon" class="w-5 h-5 flex-shrink-0">
-        <span class="text-base text-neutral-content ml-1">{{ asset.name }}</span>
+        <span class="text-base text-neutral-content ml-1">{{
+          asset.name
+        }}</span>
       </p>
     </div>
     <label v-if="error" class="label">
       <span class="label-text-alt text-error">{{ error }}</span>
     </label>
     <label class="label">
-      <span class="label-text-alt text-neutral-content">{{ formatUSDAmount(usdValue) }}</span>
+      <span class="label-text-alt text-neutral-content">{{
+        formatUSDAmount(usdValue)
+      }}</span>
       <span class="label-text-alt text-neutral-content">
-        <span class="font-bold mr-2">Total balance: {{ formatAssetAmount(max) }} </span>
+        <span class="font-bold mr-2">Total balance: {{ formatAssetAmount(max) }}
+        </span>
         <span class="text-accent cursor-pointer" @click="setMax">MAX</span>
       </span>
     </label>

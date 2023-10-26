@@ -37,10 +37,10 @@ function updateBorrow(bor: number) {
         </template>
 
         <template
-          v-if="(
-            visibleYourTable === 'COLLATERAL' && totalCollateralized > 0)
-            || (visibleYourTable === 'BORROW' && totalBorrowed > 0
-            )"
+          v-if="
+            (visibleYourTable === 'COLLATERAL' && totalCollateralized > 0)
+              || (visibleYourTable === 'BORROW' && totalBorrowed > 0)
+          "
           #top-right
         >
           <template v-if="visibleYourTable === 'COLLATERAL'">
@@ -61,10 +61,7 @@ function updateBorrow(bor: number) {
           v-if="visibleYourTable === 'COLLATERAL'"
           @collateral-calced="updateCollateral"
         />
-        <YourBorrowsTable
-          v-else
-          @borrow-calced="updateBorrow"
-        />
+        <YourBorrowsTable v-else @borrow-calced="updateBorrow" />
       </Card>
 
       <div class="flex gap-x-4 lg:flex-row flex-col">

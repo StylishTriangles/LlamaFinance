@@ -8,17 +8,22 @@ import Navbar from "~/components/Navbar.vue";
       <div class="mx-auto max-w-7xl pb-20">
         <Navbar />
         <RouterView v-if="accountStore.walletAddress" />
-        <div v-else-if="accountStore.loading" class="w-full flex justify-center">
+        <div
+          v-else-if="accountStore.loading"
+          class="w-full flex justify-center"
+        >
           <div class="loading loading-bars loading-lg mt-36" />
         </div>
-        <div v-else class="flex flex-col items-center gap-20 py-20 text-primary-content">
+        <div
+          v-else
+          class="flex flex-col items-center gap-20 py-20 text-primary-content"
+        >
           <div class="card w-108">
             <div class="card-body">
-              <h2 class="card-title text-4xl">
-                Not Connected!
-              </h2>
+              <h2 class="card-title text-4xl">Not Connected!</h2>
               <p class="text-xl">
-                Please connect with your Keplr wallet in order to use LlamaFinance
+                Please connect with your Keplr wallet in order to use
+                LlamaFinance
               </p>
             </div>
           </div>
@@ -27,7 +32,3 @@ import Navbar from "~/components/Navbar.vue";
     </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>

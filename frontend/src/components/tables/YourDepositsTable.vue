@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { emitter } from "~/main";
 import type { BasicAsset, TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
+import {
+  formatAssetAmount,
+  formatPctValue,
+  formatUSDAmount,
+  rawAssetToBasic,
+} from "~/utils";
 
 const columns = [
   {
@@ -38,7 +43,9 @@ onBeforeMount(() => {
 async function assignData() {
   isLoading.value = true;
   const rawData = await accountStore.financeSDK!.getAssetsInfoArray();
-  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  const rawUserData = await accountStore.financeSDK!.getUserAssetsInfo(
+    accountStore.walletAddress!,
+  );
   const data = [];
   let total = 0;
   for (const asset of rawData) {
@@ -52,7 +59,9 @@ async function assignData() {
       asset: rawAssetToBasic(asset, userBalance, price),
       balance: formatAssetAmount(userBalance / asset.precision),
       balance_usd: formatUSDAmount((userBalance / asset.precision) * price),
-      apr: formatPctValue(asset.apr * asset.totalBorrow / (asset.totalDeposit || 1)),
+      apr: formatPctValue(
+        (asset.apr * asset.totalBorrow) / (asset.totalDeposit || 1),
+      ),
       amount_deposited: formatAssetAmount(userDeposit),
       amount_deposited_usd: formatUSDAmount(userDeposit * price),
     });

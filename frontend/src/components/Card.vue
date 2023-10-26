@@ -8,7 +8,9 @@ defineProps({
 </script>
 
 <template>
-  <div class="card bg-neutral w-full text-neutral-content rounded-xl mt-12 lg:mt-18 shadow-2xl">
+  <div
+    class="card bg-neutral w-full text-neutral-content rounded-xl mt-12 lg:mt-18 shadow-2xl"
+  >
     <div class="card-body">
       <div class="flex items-start justify-between mb-10">
         <slot name="top-left">

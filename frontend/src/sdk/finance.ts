@@ -43,7 +43,12 @@ export class UserAssetInfoResponse {
   lAssetAmount: number;
   cumulativeInterest: number;
 
-  constructor(uai: UserAssetInfo, denom: string, decimals: number, price_per_unit: number) {
+  constructor(
+    uai: UserAssetInfo,
+    denom: string,
+    decimals: number,
+    price_per_unit: number,
+  ) {
     const precision = 10 ** decimals;
     this.denom = denom;
     this.price_per_unit = price_per_unit;
@@ -77,7 +82,7 @@ export class AssetInfoResponse {
     const precision = 10 ** ai.assetConfig.decimals;
 
     this.denom = ai.denom;
-    this.apr = Number(ai.apr) * 100 / APR_PRECISION;
+    this.apr = (Number(ai.apr) * 100) / APR_PRECISION;
     this.price_per_unit = price_per_unit;
     this.precision = precision;
     this.totalDeposit = Number(ai.totalDeposit) / precision;
@@ -99,7 +104,12 @@ export class Finance {
   client: SigningCosmWasmClient;
   oracle: Oracle;
 
-  constructor(client: SigningCosmWasmClient, walletAddress: string, contractAddress: string, oracle: Oracle) {
+  constructor(
+    client: SigningCosmWasmClient,
+    walletAddress: string,
+    contractAddress: string,
+    oracle: Oracle,
+  ) {
     this.walletAddress = walletAddress;
     this.contractAddress = contractAddress;
     this.client = client;
@@ -193,13 +203,22 @@ export class Finance {
     );
   }
 
-  async updateAsset(denom: string, decimals: number, target_utilization_rate_bps: number, min_rate: number, optimal_rate: number, max_rate: number) {
+  async updateAsset(
+    denom: string,
+    decimals: number,
+    target_utilization_rate_bps: number,
+    min_rate: number,
+    optimal_rate: number,
+    max_rate: number,
+  ) {
     // multiply by 100 to convert percentages to BPS
     const msg = {
       updateAsset: {
         denom,
         decimals,
-        target_utilization_rate_bps: Math.floor(target_utilization_rate_bps * 100),
+        target_utilization_rate_bps: Math.floor(
+          target_utilization_rate_bps * 100,
+        ),
         min_rate: Math.floor(min_rate * 100),
         optimal_rate: Math.floor(optimal_rate * 100),
         max_rate: Math.floor(max_rate * 100),
@@ -216,22 +235,25 @@ export class Finance {
 
   // Queries
   async getAssets() {
-    const res: Array<string> = await this.client.queryContractSmart(this.contractAddress, { assets: {} });
+    const res: Array<string> = await this.client.queryContractSmart(
+      this.contractAddress,
+      { assets: {} },
+    );
     return res;
   }
 
-  async getUserAssetsInfo(user: string): Promise<Map<string, UserAssetInfoResponse>> {
+  async getUserAssetsInfo(
+    user: string,
+  ): Promise<Map<string, UserAssetInfoResponse>> {
     const assetsInfo = await this.getAssetsInfoArray();
     const prices = await this.oracle.getPrices();
 
-    const userAssetsInfo: Array<UserAssetInfo> = await this.client.queryContractSmart(
-      this.contractAddress,
-      {
+    const userAssetsInfo: Array<UserAssetInfo>
+      = await this.client.queryContractSmart(this.contractAddress, {
         userAssetsInfo: {
           user,
         },
-      },
-    );
+      });
 
     const ret = new Map<string, UserAssetInfoResponse>();
     for (let i = 0; i < assetsInfo.length; i++)
@@ -249,14 +271,20 @@ export class Finance {
   }
 
   async getAssetInfo(denom: string) {
-    const res: AssetInfo = await this.client.queryContractSmart(this.contractAddress, { assetInfo: { denom } });
+    const res: AssetInfo = await this.client.queryContractSmart(
+      this.contractAddress,
+      { assetInfo: { denom } },
+    );
     const price = await this.oracle.getPrice(denom);
     return new AssetInfoResponse(res, price.price);
   }
 
   async getAssetsInfo(): Promise<Map<string, AssetInfoResponse>> {
     const prices = await this.oracle.getPrices();
-    const res: Array<AssetInfo> = await this.client.queryContractSmart(this.contractAddress, { assetsInfo: {} });
+    const res: Array<AssetInfo> = await this.client.queryContractSmart(
+      this.contractAddress,
+      { assetsInfo: {} },
+    );
     const ret = new Map<string, AssetInfoResponse>();
     for (const ai of res)
       ret.set(ai.denom, new AssetInfoResponse(ai, prices[ai.denom].price));
@@ -266,7 +294,10 @@ export class Finance {
 
   async getAssetsInfoArray(): Promise<Array<AssetInfoResponse>> {
     const prices = await this.oracle.getPrices();
-    const res: Array<AssetInfo> = await this.client.queryContractSmart(this.contractAddress, { assetsInfo: {} });
+    const res: Array<AssetInfo> = await this.client.queryContractSmart(
+      this.contractAddress,
+      { assetsInfo: {} },
+    );
     return res.map(ai => new AssetInfoResponse(ai, prices[ai.denom].price));
   }
 
@@ -281,14 +312,18 @@ export class Finance {
   }
 
   /// Positive delta means that collateral was added, negative means removed
-  getLTVafter(data: Map<string, UserAssetInfoResponse>, denom: string, delta: number) {
+  getLTVafter(
+    data: Map<string, UserAssetInfoResponse>,
+    denom: string,
+    delta: number,
+  ) {
     let totalCollateralUSD = 0;
     let totalBorrowUSD = 0;
     for (const uai of data.values()) {
       if (uai.denom === denom)
-        totalCollateralUSD += (uai.collateral + delta) * uai.price_per_unit * uai.precision;
-      else
-        totalCollateralUSD += uai.collateralUSD;
+        totalCollateralUSD
+          += (uai.collateral + delta) * uai.price_per_unit * uai.precision;
+      else totalCollateralUSD += uai.collateralUSD;
       totalBorrowUSD += uai.borrowAmountUSD;
     }
     if (totalCollateralUSD < 1e-6)
@@ -313,7 +348,8 @@ export class Finance {
     }
 
     const ltv = totalBorrowUSD / totalCollateralUSD;
-    const liquidationMargin = this.getLiquidationMargin(ltv) - MAINTANANCE_MARGIN;
+    const liquidationMargin
+      = this.getLiquidationMargin(ltv) - MAINTANANCE_MARGIN;
     const maxLoanAmountUSD = totalCollateralUSD * liquidationMargin;
     return maxLoanAmountUSD / ai.price_per_unit / ai.precision;
   }

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ClipboardCopyIcon, ExternalLinkIcon, LogoutIcon } from "@heroicons/vue/outline";
+import {
+  ClipboardCopyIcon,
+  ExternalLinkIcon,
+  LogoutIcon,
+} from "@heroicons/vue/outline";
 import { appConfig } from "~/config";
 import { abbreviate } from "~/utils";
 
@@ -30,13 +34,22 @@ function onDisconnect() {
 </script>
 
 <template>
-  <button v-if="!accountStore.walletAddress" class="btn-accent btn" @click="onConnect">
+  <button
+    v-if="!accountStore.walletAddress"
+    class="btn-accent btn"
+    @click="onConnect"
+  >
     <span v-if="accountStore.loading" class="loading loading-spinner" />
     <span v-else>Connect wallet</span>
   </button>
   <div v-else class="dropdown dropdown-end">
-    <label tabindex="0" class="btn-accent btn">{{ abbreviate(accountStore.walletAddress) }}</label>
-    <ul tabindex="0" class="dropdown-content z-[1] menu mt-1 p-2 shadow bg-accent text-accent-content rounded-box w-52">
+    <label tabindex="0" class="btn-accent btn">{{
+      abbreviate(accountStore.walletAddress)
+    }}</label>
+    <ul
+      tabindex="0"
+      class="dropdown-content z-[1] menu mt-1 p-2 shadow bg-accent text-accent-content rounded-box w-52"
+    >
       <li>
         <div class="flex" @click="onAddressCopy">
           <ClipboardCopyIcon class="w-4 shrink-0" />

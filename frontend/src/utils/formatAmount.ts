@@ -57,10 +57,13 @@ export function formatUSDAmount(value: string | number | null) {
   value = Number(value) || 0;
 
   if (value >= 1)
-    return "$" + value.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return (
+      "$"
+      + value.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
 
   const whole = Math.floor(value);
   const fraction = value - whole;
@@ -74,8 +77,7 @@ export function formatUSDAmount(value: string | number | null) {
       .substring(2)
       .padEnd(2, "0")
       .substring(0, 8)}`;
-  else
-    result = `${(whole + Number(fraction)).toLocaleString("en-US")}.00`;
+  else result = `${(whole + Number(fraction)).toLocaleString("en-US")}.00`;
 
   if (Number(result) === 0)
     return "$0.00";

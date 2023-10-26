@@ -31,7 +31,8 @@ onBeforeMount(async () => {
   const assetData = rawData.get(props.asset.denom)!;
   state.maxBalance = assetData.totalDeposit;
   state.depositedBalance = assetData.totalDepositUSD;
-  state.apr = assetData.apr * assetData.totalBorrow / (assetData.totalDeposit || 1);
+  state.apr
+    = (assetData.apr * assetData.totalBorrow) / (assetData.totalDeposit || 1);
   state.isLoading = false;
 });
 
@@ -85,9 +86,7 @@ async function onSubmit() {
     <hr class="my-4 opacity-50">
 
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Deposit balance
-      </span>
+      <span class="opacity-80"> Deposit balance </span>
       <span class="font-medium">
         <span v-if="balanceLeft >= 0">{{ formatUSDAmount(balanceLeft) }}</span>
         <span v-else>-</span>
@@ -96,14 +95,12 @@ async function onSubmit() {
 
     <div class="flex items-center mt-4">
       <ExclamationIcon class="text-warning w-8" />
-      <p class="ml-3 pl-3 py-1 border-l border-l-warning text-xs ">
+      <p class="ml-3 pl-3 py-1 border-l border-l-warning text-xs">
         You will no longer earn the following APR on the amount you withdraw:
       </p>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Interest APR
-      </span>
+      <span class="opacity-80"> Interest APR </span>
       <span class="font-medium">
         {{ formatPctValue(state.apr) }}
       </span>

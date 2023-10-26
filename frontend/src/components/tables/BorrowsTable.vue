@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import { emitter } from "~/main";
 import type { BasicAsset, TableColumn } from "~/types";
-import { formatAssetAmount, formatPctValue, formatUSDAmount, rawAssetToBasic } from "~/utils";
+import {
+  formatAssetAmount,
+  formatPctValue,
+  formatUSDAmount,
+  rawAssetToBasic,
+} from "~/utils";
 
 const columns = [
   {
@@ -52,11 +57,7 @@ function onBorrow(asset: BasicAsset) {
 
 <template>
   <Card title="Available to Borrow">
-    <BaseTable
-      :columns="columns"
-      :data="tableData"
-      :is-loading="isLoading"
-    >
+    <BaseTable :columns="columns" :data="tableData" :is-loading="isLoading">
       <template #asset="row">
         <div class="flex gap-x-2 items-center">
           <img :src="row.asset.icon" class="w-4">
@@ -80,5 +81,5 @@ function onBorrow(asset: BasicAsset) {
         </button>
       </template>
     </BaseTable>
-  </card>
+  </Card>
 </template>

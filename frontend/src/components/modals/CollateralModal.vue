@@ -25,29 +25,34 @@ const state = reactive({
 const rawUserData = ref(null as null | Map<string, UserAssetInfoResponse>);
 
 onBeforeMount(async () => {
-  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(accountStore.walletAddress!);
+  rawUserData.value = await accountStore.financeSDK!.getUserAssetsInfo(
+    accountStore.walletAddress!,
+  );
   state.colSoFar = rawUserData.value.get(props.asset.denom)!.collateralUSD;
   state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
-  state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
+  state.liqMargin
+    = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
   state.isLoading = false;
 });
 
-const collateralBalance = computed(() =>
-  state.colSoFar + state.assetUsdValue,
-);
+const collateralBalance = computed(() => state.colSoFar + state.assetUsdValue);
 const newLTV = computed(() => {
   if (!rawUserData.value)
     return 0;
-  return accountStore.financeSDK!.getLTVafter(
-    rawUserData.value,
-    props.asset.denom,
-    Number(state.assetAmount),
-  ) * 100;
+  return (
+    accountStore.financeSDK!.getLTVafter(
+      rawUserData.value,
+      props.asset.denom,
+      Number(state.assetAmount),
+    ) * 100
+  );
 });
 const newLiqMargin = computed(() => {
   if (!rawUserData.value)
     return 0;
-  return accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100;
+  return (
+    accountStore.financeSDK!.getLiquidationMargin(newLTV.value / 100) * 100
+  );
 });
 
 function onInputChange(value: string) {
@@ -100,17 +105,13 @@ async function onSubmit() {
     <hr class="my-4 opacity-50">
 
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Collateral balance
-      </span>
+      <span class="opacity-80"> Collateral balance </span>
       <span class="font-medium">
         {{ formatUSDAmount(collateralBalance) }}
       </span>
     </div>
     <div class="flex mb-1 text-sm w-full justify-between">
-      <span class="opacity-80">
-        Liquidation margin
-      </span>
+      <span class="opacity-80"> Liquidation margin </span>
       <div class="flex gap-x-2 font-medium">
         <span :class="state.liqMargin >= 0 ? 'text-success' : 'text-error'">
           {{ formatPctValue(state.liqMargin) }}

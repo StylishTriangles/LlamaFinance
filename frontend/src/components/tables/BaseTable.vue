@@ -38,10 +38,7 @@ defineProps({
       </thead>
       <tbody>
         <template v-if="data.length > 0">
-          <tr
-            v-for="(row, rowId) in data"
-            :key="rowId"
-          >
+          <tr v-for="(row, rowId) in data" :key="rowId">
             <th
               v-for="col in columns"
               :key="col.accessor + rowId"
