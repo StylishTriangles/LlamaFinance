@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { modalsID } from "~/config";
 import { emitter } from "~/main";
-import type { BasicAsset, BorrowData, WithdrawData } from "~/types";
+import type { BasicAsset, WithdrawData } from "~/types";
 
 const initialModalsData = {
   assetToDeposit: null as BasicAsset | null,
@@ -12,7 +12,6 @@ const initialModalsData = {
   aprPct: null as string | null,
 
   assetToBorrow: null as BasicAsset | null,
-  availableToBorrow: null as number | null,
 
   assetToRepay: null as BasicAsset | null,
 
@@ -48,10 +47,9 @@ function openWithdrawModal(data: WithdrawData) {
   state.aprPct = data.aprPct;
   openModal(modalsID.WITHDRAW);
 }
-function openBorrowModal(data: BorrowData) {
+function openBorrowModal(asset: BasicAsset) {
   closeModals();
-  state.assetToBorrow = data.asset;
-  state.availableToBorrow = data.available;
+  state.assetToBorrow = asset;
   openModal(modalsID.BORROW);
 }
 function openRepayModal(asset: BasicAsset) {
@@ -93,7 +91,6 @@ function closeModals() {
       v-if="state.assetToBorrow"
       :key="state.assetToBorrow.denom"
       :asset="state.assetToBorrow"
-      :available="state.availableToBorrow!"
     />
     <RepayModal
       v-if="state.assetToRepay"

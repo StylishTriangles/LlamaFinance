@@ -16,7 +16,7 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  isLoading: false,
+  isLoading: true,
   maxBalance: props.asset.balance,
   colSoFar: 0,
   liqMargin: 0,
@@ -29,6 +29,7 @@ onBeforeMount(async () => {
   state.colSoFar = rawUserData.value.get(props.asset.denom)!.collateralUSD;
   state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
   state.liqMargin = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
+  state.isLoading = false;
 });
 
 const collateralBalance = computed(() =>

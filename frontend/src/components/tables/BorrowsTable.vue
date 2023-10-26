@@ -45,8 +45,8 @@ onBeforeMount(async () => {
   isLoading.value = false;
 });
 
-function onBorrow(asset: BasicAsset, available: number) {
-  emitter.emit("open-borrow-modal", { asset, available });
+function onBorrow(asset: BasicAsset) {
+  emitter.emit("open-borrow-modal", asset);
 }
 </script>
 
@@ -74,7 +74,7 @@ function onBorrow(asset: BasicAsset, available: number) {
       <template #action="row">
         <button
           class="btn btn-primary float-right text-xs"
-          :onclick="() => onBorrow(row.asset, Number(row.available))"
+          :onclick="() => onBorrow(row.asset)"
         >
           Borrow
         </button>
