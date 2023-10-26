@@ -32,7 +32,9 @@ onBeforeMount(async () => {
   state.borrowedSoFar = rawUserData.value.get(
     props.asset.denom,
   )!.borrowAmountUSD;
-  state.maxBalance = state.borrowedSoFar;
+  state.maxBalance = rawUserData.value.get(
+    props.asset.denom,
+  )!.borrowAmount;
   state.ltv = accountStore.financeSDK!.getLTV(rawUserData.value) * 100;
   state.liqMargin
     = accountStore.financeSDK!.getLiquidationMargin(state.ltv / 100) * 100;
