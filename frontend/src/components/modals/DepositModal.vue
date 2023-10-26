@@ -15,17 +15,23 @@ const state = reactive({
   assetAmount: "",
   assetUsdValue: 0,
   error: "",
-  isLoading: false,
+  isLoading: true,
   maxBalance: props.asset.balance,
   depositedBalance: 0,
+  apr: 0,
 });
 
 const totalBalance = computed(() =>
   state.depositedBalance + state.assetUsdValue,
 );
-const interestAPR = computed(() =>
-  15.24, // TODO
-);
+
+onBeforeMount(async () => {
+  const rawData = await accountStore.financeSDK!.getAssetsInfo();
+  const assetData = rawData.get(props.asset.denom)!;
+  state.depositedBalance = assetData.totalDepositUSD;
+  state.apr = assetData.apr * assetData.totalBorrow / (assetData.totalDeposit || 1);
+  state.isLoading = false;
+});
 
 function onInputChange(value: string) {
   state.assetAmount = value;
@@ -89,7 +95,7 @@ async function onSubmit() {
         Interest APR
       </span>
       <span class="font-medium">
-        {{ formatPctValue(interestAPR) }}
+        {{ formatPctValue(state.apr) }}
       </span>
     </div>
   </BaseModal>
