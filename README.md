@@ -58,6 +58,10 @@ Discover detailed instructions on how to make the most of LlamaFinance on Coreum
 
 LlamaFinance thrives on community involvement. If you're passionate about DeFi and want to contribute to the project's development, please review our Contribution Guidelines(TODO).
 
+## 🎬 Demo
+Watch a demo of the app here:
+https://drive.google.com/file/d/1STtuQacceotnrjtECba73qJl09ohHNsu/view?usp=drive_link
+
 ## 📜 License
 
 This project is licensed under the MIT License. You're welcome to fork and customize it to meet your specific needs.
