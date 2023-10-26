@@ -332,6 +332,31 @@ export class Finance {
     return totalBorrowUSD / totalCollateralUSD;
   }
 
+  getLTVafterBorrow(
+    data: Map<string, UserAssetInfoResponse>,
+    denom: string,
+    borrow: number,
+  ) {
+    console.log(data);
+    let totalCollateralUSD = 0;
+    let totalBorrowUSD = 0;
+    for (const uai of data.values()) {
+      if (uai.denom === denom) {
+        totalCollateralUSD += uai.collateralUSD;
+        totalBorrowUSD += (uai.borrowAmount + borrow) * uai.price_per_unit * uai.precision;
+      }
+      else {
+        totalCollateralUSD += uai.collateralUSD;
+        totalBorrowUSD += uai.borrowAmountUSD;
+      }
+    }
+    console.log(totalCollateralUSD);
+    if (totalCollateralUSD < 1e-6)
+      return 0;
+
+    return totalBorrowUSD / totalCollateralUSD;
+  }
+
   getLiquidationMargin(ltv: number) {
     return 1 - ltv / MAX_LTV;
   }

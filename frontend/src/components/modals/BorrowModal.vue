@@ -52,11 +52,12 @@ const totalBorrow = computed(() => state.borrowedSoFar + state.assetUsdValue);
 const newLTV = computed(() => {
   if (!rawUserData.value)
     return 0;
+  console.log("sus");
   return (
-    accountStore.financeSDK!.getLTVafter(
+    accountStore.financeSDK!.getLTVafterBorrow(
       rawUserData.value,
       props.asset.denom,
-      Number(state.assetAmount) * -1,
+      Number(state.assetAmount),
     ) * 100
   );
 });
