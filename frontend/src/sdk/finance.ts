@@ -321,13 +321,9 @@ export class Finance {
     let totalBorrowUSD = 0;
     for (const uai of data.values()) {
       if (uai.denom === denom) {
-        if (delta < 0) {
-          totalCollateralUSD += uai.collateralUSD;
-          totalBorrowUSD += (uai.borrowAmount - delta) * uai.price_per_unit * uai.precision;
-        } else {
-          totalCollateralUSD += (uai.collateral + delta) * uai.price_per_unit * uai.precision;
-          totalBorrowUSD += uai.borrowAmountUSD;
-        }
+        totalCollateralUSD += (uai.collateral + delta) * uai.price_per_unit
+          * uai.precision;
+        totalBorrowUSD += uai.borrowAmountUSD;
       }
     }
     if (totalCollateralUSD < 1e-6)
