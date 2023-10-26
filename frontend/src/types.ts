@@ -16,17 +16,10 @@ export interface BasicAsset {
   precision: number;
 }
 
-export interface WithdrawData {
-  asset: BasicAsset;
-  available: number;
-  totalDeposited: number;
-  aprPct: string;
-}
-
 export interface EmitterEvents extends Record<EventType, any> {
   "txn-success": string;
   "open-deposit-modal": BasicAsset;
-  "open-withdraw-modal": WithdrawData;
+  "open-withdraw-modal": BasicAsset;
   "open-borrow-modal": BasicAsset;
   "open-repay-modal": any;
   "open-collateral-modal": BasicAsset;

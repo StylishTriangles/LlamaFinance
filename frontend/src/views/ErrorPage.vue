@@ -5,7 +5,7 @@ const router = useRouter();
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-20 py-20">
+  <div class="flex flex-col items-center gap-20 py-20 text-primary-content">
     <div class="card w-96">
       <div class="card-body">
         <h2 class="card-title">

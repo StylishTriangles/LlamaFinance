@@ -8,6 +8,9 @@ import Navbar from "~/components/Navbar.vue";
       <div class="mx-auto max-w-7xl pb-20">
         <Navbar />
         <RouterView v-if="accountStore.walletAddress" />
+        <div v-else-if="accountStore.loading" class="w-full flex justify-center">
+          <div class="loading loading-bars loading-lg mt-36" />
+        </div>
         <div v-else class="flex flex-col items-center gap-20 py-20 text-primary-content">
           <div class="card w-108">
             <div class="card-body">
